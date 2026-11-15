@@ -30,3 +30,10 @@ Automatic card/mobile-money billing (e.g. Paystack) needs a Cloud Function webho
 - Product photos are shrunk to ~320px JPEGs and stored in the medicine document (no Firebase Storage or paid plan needed). Rules cap them at ~70 KB.
 - Each product can have a barcode: type it, scan it with the camera, or generate one. Camera scanning loads a library from cdnjs on first use. USB/Bluetooth scanners work too: focus the New sale search box, scan, and the item is added.
 - Labels (50x30 mm roll or A4 sheet) print Code128 barcodes via the browser print dialog. Products without a barcode get one automatically.
+
+## More iPhone fixes
+- Photos: separate **Take photo** and **Choose photo** buttons; photos are auto-rotated, shrunk until they fit the 60 KB limit, and show a size and error message. Large iPhone photos no longer fail.
+- The bottom tab bar hides while the keyboard is open, focused fields scroll into view, and the page behind a pop-up no longer scrolls.
+- The camera scanner stops when the app goes to the background (iOS ends the camera stream anyway).
+- Launch splash screens for iPhone 8 up to iPhone 16 Pro Max remove the white flash when opening from the home screen.
+- A "new version is ready" banner with a Reload button appears after you deploy an update.
