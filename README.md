@@ -25,3 +25,8 @@ One `index.html` serves three kinds of user: the **platform owner** (you), a **p
 
 ## Next steps (need a server)
 Automatic card/mobile-money billing (e.g. Paystack) needs a Cloud Function webhook that calls the same logic as `recordPay`. Email reminders for expiring subscriptions need a scheduled function.
+
+## Photos, barcodes and labels
+- Product photos are shrunk to ~320px JPEGs and stored in the medicine document (no Firebase Storage or paid plan needed). Rules cap them at ~70 KB.
+- Each product can have a barcode: type it, scan it with the camera, or generate one. Camera scanning loads a library from cdnjs on first use. USB/Bluetooth scanners work too: focus the New sale search box, scan, and the item is added.
+- Labels (50x30 mm roll or A4 sheet) print Code128 barcodes via the browser print dialog. Products without a barcode get one automatically.

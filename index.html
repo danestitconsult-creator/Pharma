@@ -15,6 +15,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PharmaDesk">
 <meta name="format-detection" content="telephone=no">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.code128.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
@@ -80,6 +81,16 @@ label{display:grid;gap:4px;font-size:13px;color:var(--mute);font-weight:600}
 #ios{position:fixed;left:12px;right:12px;bottom:calc(12px + var(--sb));background:var(--ink);color:#fff;border-radius:12px;padding:14px 16px;z-index:50;display:flex;gap:12px;align-items:center;justify-content:space-between}
 #ios button{background:#fff;color:var(--ink);border:0;padding:6px 14px;min-height:40px}
 .link{background:none;border:0;color:var(--pine2);text-decoration:underline;min-height:36px;cursor:pointer}
+.th{width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--line);flex:none;background:#fff}
+.nm{display:flex;gap:10px;align-items:center}
+#printArea{display:none}
+.lb{box-sizing:border-box;font:9pt/1.2 Manrope,Arial,sans-serif;color:#000;overflow:hidden;page-break-inside:avoid;background:#fff}
+.lb svg{width:100%;height:12mm;display:block}
+.lb.r{width:50mm;height:30mm;padding:1.5mm 2mm;page-break-after:always}
+.lb.s{width:62mm;height:36mm;padding:2mm;border:.2mm dashed #999}
+.ln{font-weight:800;font-size:10pt;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls,.ld{font-size:7pt;color:#222}
+#printArea.sheet{grid-template-columns:repeat(3,62mm);gap:2mm}
 @media(max-width:800px){
   #app{grid-template-columns:1fr}
   nav{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;align-items:center;overflow-x:auto;overflow-y:hidden;padding:6px 6px calc(6px + var(--sb));z-index:5;-webkit-overflow-scrolling:touch}
@@ -88,7 +99,9 @@ label{display:grid;gap:4px;font-size:13px;color:var(--mute);font-weight:600}
   .cols,.pos{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}
   #ios{bottom:calc(76px + var(--sb))}
 }
-@media print{nav,.bar,.btn,#ios{display:none!important}#app{display:block}}
+@media print{nav,.bar,.btn,#ios{display:none!important}#app{display:block}
+body.printing>*:not(#printArea){display:none!important}body.printing{background:#fff;padding:0}
+body.printing #printArea{display:block}body.printing #printArea.sheet{display:grid}}
 </style>
 </head>
 <body>
@@ -108,6 +121,8 @@ label{display:grid;gap:4px;font-size:13px;color:var(--mute);font-weight:600}
 <section id="gate" class="hide"></section>
 <div id="app" class="hide"><nav id="nav"></nav><main id="view"></main></div>
 <dialog id="dlg"></dialog>
+<dialog id="dlg2"></dialog>
+<div id="printArea"></div>
 <div id="toast" class="hide"></div>
 <div id="ios" class="hide"></div>
 
@@ -321,19 +336,19 @@ function dash() {
     <div class="panel"><h3>Expiring soon</h3>${rows(soon)}<h3 style="margin-top:14px">Expired: remove from shelves</h3>${rows(gone)}</div></div>`;
 }
 function inv() {
-  const f = meds.filter(m => (m.name + m.generic + m.batch + m.category).toLowerCase().includes(q.toLowerCase())), adm = profile.role === "admin";
-  return `<div class="bar"><h2>Inventory</h2><input id="search" placeholder="Search name, batch, category" value="${esc(q)}"><button class="btn" data-act="addMed" ${canWrite() ? "" : "disabled"}>Add medicine</button></div>
-  <div class="panel">${f.length ? `<table><tr><th>Medicine</th><th>Category</th><th>Batch</th><th>Expiry</th><th class="r">Qty</th><th class="r">Price</th><th>Status</th><th></th></tr>
-  ${f.map(m => `<tr><td><b>${esc(m.name)}</b><br><small>${esc(m.generic)}</small></td><td>${esc(m.category)}</td><td>${esc(m.batch)}</td><td>${esc(m.expiry)}</td><td class="r">${m.qty}</td><td class="r">${money(m.price)}</td><td>${tag(m)}</td>
-  <td class="r"><button class="btn ghost sm" data-act="editMed" data-id="${m.id}" ${canWrite() ? "" : "disabled"}>Edit</button> ${adm ? `<button class="btn del sm" data-act="delMed" data-id="${m.id}" ${canWrite() ? "" : "disabled"}>Delete</button>` : ""}</td></tr>`).join("")}</table>` : empty("No medicines yet. Add your first product to start tracking stock.")}</div>`;
+  const f = meds.filter(m => [m.name, m.generic, m.dosage, m.batch, m.category, m.barcode, m.description].join(" ").toLowerCase().includes(q.toLowerCase())), adm = profile.role === "admin"; shown = f;
+  return `<div class="bar"><h2>Inventory</h2><input id="search" placeholder="Search name, dosage, barcode" value="${esc(q)}"><button class="btn ghost" data-act="scanInv">Scan</button><button class="btn ghost" data-act="labels">Print labels</button><button class="btn" data-act="addMed" ${canWrite() ? "" : "disabled"}>Add medicine</button></div>
+  <div class="panel">${f.length ? `<table><tr><th>Medicine</th><th>Category</th><th>Age limit</th><th>Batch</th><th>Expiry</th><th class="r">Qty</th><th class="r">Price</th><th>Status</th><th></th></tr>
+  ${f.map(m => `<tr><td><div class="nm">${m.image ? `<img class="th" src="${esc(m.image)}" alt="">` : ""}<span><b>${esc(m.name)}</b><br><small>${esc(m.generic)}</small>${m.dosage ? `<br><small>${esc(m.dosage)}</small>` : ""}</span></div></td><td>${esc(m.category)}</td><td>${m.ageLimit ? `<span class="tag warn">${esc(m.ageLimit)}</span>` : "<small>None</small>"}</td><td>${esc(m.batch)}</td><td>${esc(m.expiry)}</td><td class="r">${m.qty}</td><td class="r">${money(m.price)}</td><td>${tag(m)}</td>
+  <td class="r"><button class="btn ghost sm" data-act="viewMed" data-id="${m.id}">Details</button> <button class="btn ghost sm" data-act="editMed" data-id="${m.id}" ${canWrite() ? "" : "disabled"}>Edit</button> ${adm ? `<button class="btn del sm" data-act="delMed" data-id="${m.id}" ${canWrite() ? "" : "disabled"}>Delete</button>` : ""}</td></tr>`).join("")}</table>` : empty("No medicines yet. Add your first product to start tracking stock.")}</div>`;
 }
 function posList() {
-  const f = meds.filter(m => m.qty > 0 && !(m.expiry && daysTo(m.expiry) < 0) && (m.name + m.generic + m.batch).toLowerCase().includes(q.toLowerCase())).slice(0, 30);
-  return f.length ? f.map(m => `<button class="pick" data-act="addCart" data-id="${m.id}"><span><b>${esc(m.name)}</b> <small>${esc(m.batch)} · exp ${esc(m.expiry)}</small></span><span>${money(m.price)} · ${m.qty} in stock</span></button>`).join("") : empty("No sellable stock matches your search.");
+  const f = meds.filter(m => m.qty > 0 && !(m.expiry && daysTo(m.expiry) < 0) && [m.name, m.generic, m.dosage, m.batch, m.barcode].join(" ").toLowerCase().includes(q.toLowerCase())).slice(0, 30);
+  return f.length ? f.map(m => `<button class="pick" data-act="addCart" data-id="${m.id}"><span class="nm">${m.image ? `<img class="th" src="${esc(m.image)}" alt="">` : ""}<span><b>${esc(m.name)}</b> <small>${esc(m.batch)} · exp ${esc(m.expiry)}</small>${m.dosage ? `<br><small>${esc(m.dosage)}</small>` : ""}${m.ageLimit ? `<br><span class="tag warn">Age: ${esc(m.ageLimit)}</span>` : ""}</span></span><span>${money(m.price)} · ${m.qty} in stock</span></button>`).join("") : empty("No sellable stock matches your search.");
 }
 function pos() {
-  return `<h2>New sale</h2><div class="pos"><div class="panel"><input id="posSearch" type="search" placeholder="Search medicine or batch" value="${esc(q)}" style="margin-bottom:8px"><div id="posList">${posList()}</div></div>
-  <div class="panel"><h3>Cart</h3>${cart.length ? `<table>${cart.map((c, i) => `<tr><td>${esc(c.name)}<br><small>${money(c.price)}</small></td><td><input class="qty" type="number" inputmode="numeric" min="1" max="${c.max}" value="${c.qty}" data-act="qty" data-i="${i}"></td><td class="r">${money(c.price * c.qty)}</td><td><button class="btn del sm" data-act="rm" data-i="${i}">✕</button></td></tr>`).join("")}</table>` : empty("Select a medicine to add it to the cart.")}
+  return `<h2>New sale</h2><div class="pos"><div class="panel"><div style="display:flex;gap:8px;margin-bottom:8px"><input id="posSearch" type="search" placeholder="Search, or scan a barcode" value="${esc(q)}"><button class="btn ghost" data-act="scanPos">Scan</button></div><div id="posList">${posList()}</div></div>
+  <div class="panel"><h3>Cart</h3>${cart.length ? `<table>${cart.map((c, i) => `<tr><td>${esc(c.name)}<br><small>${money(c.price)}</small>${c.age ? `<br><span class="tag warn">Age: ${esc(c.age)}</span>` : ""}</td><td><input class="qty" type="number" inputmode="numeric" min="1" max="${c.max}" value="${c.qty}" data-act="qty" data-i="${i}"></td><td class="r">${money(c.price * c.qty)}</td><td><button class="btn del sm" data-act="rm" data-i="${i}">✕</button></td></tr>`).join("")}</table>` : empty("Select a medicine to add it to the cart.")}
   <div class="tot"><span>Total</span><span>${money(cartTotal())}</span></div>
   <div class="grid2"><label>Customer<select id="cust"><option value="">Walk-in</option>${custs.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join("")}</select></label>
   <label>Payment<select id="pay"><option>Cash</option><option>Mobile money</option><option>Card</option><option>Insurance</option></select></label></div>
@@ -406,20 +421,93 @@ function form(title, fields, vals, onSave) {
   const d = $("#dlg");
   d.innerHTML = `<form method="dialog" id="f"><h3>${title}</h3><div class="grid2">${fields.map(([k, l, t = "text", req = 1, opts]) => `<label style="${t === "wide" || t === "area" ? "grid-column:1/-1" : ""}">${l}${
     t === "select" ? `<select name="${k}">${opts.map(([v, n]) => `<option value="${v}" ${String(vals[k]) === String(v) ? "selected" : ""}>${n}</option>`).join("")}</select>` :
+    t === "image" ? `<span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><img id="imgPrev" class="th" style="width:64px;height:64px;${vals[k] ? "" : "display:none"}" src="${esc(vals[k] || "")}" alt=""><input type="file" id="imgFile" accept="image/*" style="flex:1;min-width:160px"><input type="hidden" name="${k}" id="imgVal" value="${esc(vals[k] || "")}"><button type="button" class="link" id="imgRm">Remove photo</button></span>` :
     t === "area" ? `<textarea name="${k}" rows="4" style="font:inherit;font-size:16px;padding:9px 12px;border:1px solid var(--line);border-radius:8px">${esc(vals[k])}</textarea>` :
     `<input name="${k}" type="${t === "wide" ? "text" : t}" ${req ? "required" : ""} ${t === "number" ? 'step="any" min="0" inputmode="decimal"' : ""} ${t === "email" ? 'inputmode="email" autocapitalize="none"' : ""} value="${esc(vals[k] ?? "")}">`}</label>`).join("")}</div>
   <div class="bar" style="margin:18px 0 0;justify-content:flex-end"><button class="btn ghost" type="button" id="cx">Cancel</button><button class="btn">Save</button></div></form>`;
   openDlg(d);
   $("#cx").onclick = () => closeDlg(d);
+  const bi = d.querySelector("[name=barcode]");
+  if (bi) {
+    const r = document.createElement("div"); r.className = "bar"; r.style.cssText = "grid-column:1/-1;margin:-4px 0 0";
+    r.innerHTML = '<button type="button" class="btn ghost sm" id="bcScan">Scan with camera</button><button type="button" class="btn ghost sm" id="bcGen">Generate a code</button>';
+    bi.closest("label").after(r);
+    $("#bcScan").onclick = () => scan(t => { bi.value = t; });
+    $("#bcGen").onclick = () => { bi.value = genBarcode(); };
+  }
+  const fi = $("#imgFile");
+  if (fi) {
+    fi.onchange = async () => { if (!fi.files[0]) return; try { const u = await shrink(fi.files[0]); $("#imgVal").value = u; $("#imgPrev").src = u; $("#imgPrev").style.display = ""; } catch (err) { toast(err.message); } };
+    $("#imgRm").onclick = () => { $("#imgVal").value = ""; $("#imgPrev").style.display = "none"; fi.value = ""; };
+  }
   $("#f").onsubmit = async e => {
     e.preventDefault();
     const o = Object.fromEntries(new FormData(e.target)); fields.forEach(([k,, t]) => { if (t === "number") o[k] = +o[k] || 0; });
     try { await onSave(o); closeDlg(d); toast("Saved"); } catch (err) { toast("Could not save: " + (err.code || err.message)); }
   };
 }
-const medFields = [["name", "Medicine name"], ["generic", "Generic name", "text", 0], ["category", "Category"], ["batch", "Batch number"], ["qty", "Quantity", "number"], ["reorder", "Reorder level", "number"], ["cost", "Cost price", "number"], ["price", "Selling price", "number"], ["expiry", "Expiry date", "date"], ["supplier", "Supplier", "text", 0]];
+const medFields = [["name", "Medicine name"], ["generic", "Generic name", "text", 0], ["category", "Category"], ["dosage", "Dosage (e.g. 500mg tablet, 1–2 every 6 hours)", "wide", 0], ["ageLimit", "Age limit (e.g. 12+ years, adults only)", "wide", 0], ["batch", "Batch number"], ["qty", "Quantity", "number"], ["reorder", "Reorder level", "number"], ["cost", "Cost price", "number"], ["price", "Selling price", "number"], ["expiry", "Expiry date", "date"], ["supplier", "Supplier", "text", 0], ["barcode", "Barcode", "text", 0], ["image", "Photo", "image", 0], ["description", "Description (uses, warnings, storage)", "area", 0]];
 const custFields = [["name", "Full name"], ["phone", "Phone", "tel", 0], ["notes", "Notes", "wide", 0]];
 const planOpts = () => Object.entries(settings.plans).map(([k, p]) => [k, p.name]);
+
+/* ---------- Photos, barcodes, scanning, labels ---------- */
+// Photos are shrunk to a small JPEG and stored inside the medicine document (no Storage plan needed).
+const shrink = file => new Promise((ok, no) => {
+  const u = URL.createObjectURL(file), i = new Image();
+  i.onload = () => { const k = Math.min(1, 320 / Math.max(i.width, i.height)), c = document.createElement("canvas"); c.width = Math.round(i.width * k); c.height = Math.round(i.height * k);
+    const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(i, 0, 0, c.width, c.height); URL.revokeObjectURL(u); ok(c.toDataURL("image/jpeg", 0.7)); };
+  i.onerror = () => no(new Error("Could not read that image. Try a JPEG or PNG."));
+  i.src = u;
+});
+const genBarcode = () => { let c; do { c = "2" + String(Date.now()).slice(-7) + String(Math.floor(Math.random() * 1e4)).padStart(4, "0"); } while (meds.some(m => m.barcode === c)); return c; };
+const drawBC = (el, t) => { try { if (window.JsBarcode) JsBarcode(el, t, {format: "CODE128", height: 44, width: 2, fontSize: 14, margin: 2, displayValue: true}); } catch (e) {} };
+const byCode = t => meds.find(m => m.barcode && m.barcode === String(t).trim());
+let shown = [], scanner = null;
+const saveMed = (o, id) => {
+  o.barcode = (o.barcode || "").trim();
+  if (o.barcode && meds.some(m => m.id !== id && m.barcode === o.barcode)) throw new Error("Another product already uses that barcode.");
+  return setDoc(id ? sref("medicines", id) : doc(sref("medicines")), o, {merge: true});
+};
+function addCart(id, say) {
+  const m = meds.find(x => x.id === id); if (!m) return;
+  if (m.qty <= 0 || (m.expiry && daysTo(m.expiry) < 0)) return toast(m.name + (m.qty <= 0 ? " is out of stock" : " is expired"));
+  const c = cart.find(x => x.id === id);
+  if (c) c.qty = Math.min(c.qty + 1, m.qty); else cart.push({id, name: m.name, price: m.price, qty: 1, max: m.qty, age: m.ageLimit || ""});
+  render(); if (say) toast("Added " + m.name);
+}
+async function scan(cb) {
+  const d = $("#dlg2");
+  d.innerHTML = `<h3>Scan barcode</h3><div id="reader" style="width:100%"></div><p><small>Hold the barcode steady inside the frame. Allow camera access if asked.</small></p><div class="bar" style="justify-content:flex-end;margin:0"><button class="btn ghost" id="scx">Cancel</button></div>`;
+  openDlg(d);
+  const stop = async () => { const sc = scanner; scanner = null; try { if (sc) { await sc.stop(); sc.clear(); } } catch (e) {} closeDlg(d); };
+  $("#scx").onclick = stop; d.onclose = () => { if (scanner) stop(); };
+  try {
+    if (!window.Html5Qrcode) await new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"; sc.onload = ok; sc.onerror = () => no(new Error("Could not load the scanner. Check your connection.")); document.head.appendChild(sc); });
+    const F = Html5QrcodeSupportedFormats;
+    scanner = new Html5Qrcode("reader", {formatsToSupport: [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF, F.QR_CODE], useBarCodeDetectorIfSupported: true, verbose: false});
+    let got = false;
+    await scanner.start({facingMode: "environment"}, {fps: 10, qrbox: {width: 260, height: 140}}, t => { if (got) return; got = true; stop().then(() => cb(t)); }, () => {});
+  } catch (err) { await stop(); toast(err.message && err.message.includes("scanner") ? err.message : "Camera not available. Allow camera access in your browser settings, or type the barcode instead."); }
+}
+function labelDialog(items) {
+  if (!items.length) return toast("No products to print.");
+  if (items.length > 100) { items = items.slice(0, 100); toast("Printing the first 100 products."); }
+  form("Print labels (" + items.length + " product" + (items.length === 1 ? "" : "s") + ")", [["copies", "Copies per product", "number"], ["size", "Label size", "select", 1, [["roll", "Roll label 50 × 30 mm"], ["sheet", "A4 sheet, 3 per row"]]]], {copies: 1, size: "roll"},
+    o => printLabels(items, o.size, Math.max(1, Math.min(50, o.copies | 0))));
+}
+async function printLabels(items, size, copies) {
+  if (!window.JsBarcode) throw new Error("Barcode tool not loaded. Check your connection and try again.");
+  for (const m of items) if (!m.barcode) { m.barcode = genBarcode(); if (canWrite()) await updateDoc(sref("medicines", m.id), {barcode: m.barcode}); }
+  const roll = size === "roll", pa = $("#printArea");
+  pa.className = roll ? "roll" : "sheet";
+  pa.innerHTML = items.flatMap(m => Array(copies).fill(`<div class="lb ${roll ? "r" : "s"}"><div class="ls">${esc(shop.name)}</div><div class="ln">${esc(m.name)}</div><div class="ld">${esc(m.dosage || "")}</div><div class="ld"><b style="font-size:10pt">${money(m.price)}</b>${m.expiry ? " · Exp " + esc(m.expiry) : ""}${m.ageLimit ? " · Age " + esc(m.ageLimit) : ""}</div><svg data-bc="${esc(m.barcode)}"></svg></div>`)).join("");
+  pa.querySelectorAll("svg[data-bc]").forEach(el => drawBC(el, el.dataset.bc));
+  const st = document.createElement("style"); st.textContent = roll ? "@page{size:50mm 30mm;margin:0}" : "@page{size:A4;margin:8mm}"; document.head.appendChild(st);
+  document.body.classList.add("printing");
+  const done = () => { document.body.classList.remove("printing"); st.remove(); pa.innerHTML = ""; window.removeEventListener("afterprint", done); };
+  window.addEventListener("afterprint", done);
+  setTimeout(() => window.print(), 200);
+}
 
 /* ---------- Actions ---------- */
 const sref = (n, id) => id ? doc(db, "shops", profile.shopId, n, id) : collection(db, "shops", profile.shopId, n);
@@ -459,13 +547,20 @@ document.addEventListener("click", async e => {
   const {act, id, i} = b.dataset, sh = shops.find(s => s.id === id);
   const med = meds.find(m => m.id === id), cu = custs.find(c => c.id === id);
   const done = d => () => closeDlg($("#dlg"));
-  if (act === "addMed") { if (meds.length >= lim().products) return toast("Product limit reached for your plan."); form("Add medicine", medFields, {qty: 0, reorder: 10}, o => setDoc(doc(sref("medicines")), o)); }
-  if (act === "editMed") form("Edit medicine", medFields, med, o => setDoc(sref("medicines", id), o, {merge: true}));
+  if (act === "addMed") { if (meds.length >= lim().products) return toast("Product limit reached for your plan."); form("Add medicine", medFields, {qty: 0, reorder: 10}, o => saveMed(o)); }
+  if (act === "viewMed") { const d = $("#dlg"); d.innerHTML = `<h3>${esc(med.name)}</h3><p style="margin:0 0 12px;color:var(--mute)">${esc(med.generic)}</p>
+    <table><tr><td><b>Dosage</b></td><td>${esc(med.dosage) || "Not set"}</td></tr><tr><td><b>Age limit</b></td><td>${esc(med.ageLimit) || "None"}</td></tr><tr><td><b>Category</b></td><td>${esc(med.category)}</td></tr><tr><td><b>Batch / expiry</b></td><td>${esc(med.batch)} · ${esc(med.expiry)}</td></tr><tr><td><b>Supplier</b></td><td>${esc(med.supplier) || "Not set"}</td></tr></table>${med.image ? `<img src="${esc(med.image)}" alt="" style="max-width:100%;max-height:220px;border-radius:8px;margin-top:12px">` : ""}${med.barcode ? `<svg id="dbc" style="display:block;max-width:100%;margin-top:8px"></svg>` : ""}
+    <p style="white-space:pre-wrap">${esc(med.description) || "No description yet."}</p><div class="bar" style="justify-content:flex-end;margin:12px 0 0"><button class="btn ghost" id="lbl">Print label</button><button class="btn" id="cx">Close</button></div>`; openDlg(d); $("#cx").onclick = () => closeDlg(d); $("#lbl").onclick = () => { closeDlg(d); labelDialog([med]); }; if (med.barcode) drawBC($("#dbc"), med.barcode); }
+  if (act === "editMed") form("Edit medicine", medFields, med, o => saveMed(o, id));
   if (act === "delMed" && confirm("Delete this medicine permanently?")) deleteDoc(sref("medicines", id));
   if (act === "addCust") form("Add customer", custFields, {}, o => setDoc(doc(sref("customers")), o));
   if (act === "editCust") form("Edit customer", custFields, cu, o => setDoc(sref("customers", id), o, {merge: true}));
   if (act === "delCust" && confirm("Delete this customer?")) deleteDoc(sref("customers", id));
-  if (act === "addCart") { const c = cart.find(x => x.id === id); if (c) c.qty = Math.min(c.qty + 1, med.qty); else cart.push({id, name: med.name, price: med.price, qty: 1, max: med.qty}); render(); }
+  if (act === "addCart") addCart(id);
+  if (act === "scanPos") scan(t => { const m = byCode(t); m ? addCart(m.id, true) : toast("No product with barcode " + t); });
+  if (act === "scanInv") scan(t => { q = t; render(); });
+  if (act === "labels") labelDialog(shown);
+  if (act === "labelOne") labelDialog([med]);
   if (act === "rm") { cart.splice(+i, 1); render(); }
   if (act === "checkout") checkout();
   if (act === "editShop") form("Shop details", [["name", "Pharmacy name"], ["phone", "Phone", "tel", 0], ["address", "Address", "wide", 0], ["currency", "Currency symbol"]], shop, o => updateDoc(doc(db, "shops", shop.id), o));
@@ -496,6 +591,11 @@ document.addEventListener("submit", async e => {
 });
 document.addEventListener("change", e => {
   if (e.target.dataset.act === "qty") { const c = cart[+e.target.dataset.i]; c.qty = Math.max(1, Math.min(c.max, +e.target.value || 1)); render(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter" || e.target.id !== "posSearch") return;
+  const v = e.target.value.trim(), m = byCode(v); if (!v) return;
+  e.preventDefault(); if (m) { q = ""; addCart(m.id, true); } else if (!/\s/.test(v) && v.length > 5 && !meds.some(x => (x.name || "").toLowerCase().includes(v.toLowerCase()))) toast("No product with barcode " + v);
 });
 document.addEventListener("input", e => {
   if (e.target.id === "posSearch") { q = e.target.value; $("#posList").innerHTML = posList(); }
