@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PharmaDesk – Pharmacy management</title>
+<meta name="theme-color" content="#0f3d3e">
+<meta name="description" content="Inventory, sales and customers for your pharmacy.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PharmaDesk">
+<meta name="format-detection" content="telephone=no">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--pine:#0f3d3e;--pine2:#165456;--paper:#f6f8f7;--card:#fff;--line:#dbe3e0;--ink:#16211f;--mute:#5d6e6a;--amber:#b7791f;--amberbg:#fdf3dc;--red:#b83a26;--redbg:#fbe7e3;--ok:#1f7a55;--okbg:#e2f4ec;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:15px/1.5 Manrope,system-ui,-apple-system,sans-serif;background:var(--paper);color:var(--ink);overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+/* iOS: 16px inputs stop Safari zooming on focus; appearance reset removes native shadows */
+button,input,select{font:inherit;font-size:16px;-webkit-appearance:none;appearance:none;border-radius:8px;min-height:44px}
+.hide{display:none!important}
+#login,#gate{min-height:100vh;min-height:100dvh;display:grid;place-items:center;background:var(--pine);padding:calc(20px + var(--st)) 20px calc(20px + var(--sb))}
+#login form,#gate form{background:var(--card);padding:30px;border-radius:12px;width:100%;max-width:400px;display:grid;gap:12px}
+#login h1,#gate h1{margin:0;font-size:28px;font-weight:800;color:var(--pine)}
+#app{display:grid;grid-template-columns:220px 1fr;min-height:100vh;min-height:100dvh}
+nav{background:var(--pine);color:#cfe3df;padding:calc(20px + var(--st)) 12px 20px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;height:100dvh;overflow-y:auto}
+nav b{color:#fff;font-size:20px;font-weight:800;padding:0 10px 18px}
+nav button{background:none;border:0;color:inherit;text-align:left;padding:10px;border-radius:8px;cursor:pointer}
+nav button.on{background:#fff;color:var(--pine);font-weight:600}
+nav .sp{flex:1}nav small{padding:0 10px;word-break:break-all;opacity:.7}
+main{padding:calc(28px + var(--st)) 28px 28px;max-width:1100px;width:100%}
+h2{margin:0 0 18px;font-size:24px;font-weight:800}h3{margin:0 0 10px;font-size:16px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.bar h2{margin:0;flex:1}
+input,select{padding:9px 12px;border:1px solid var(--line);background:#fff;width:100%;color:var(--ink)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%235d6e6a' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+input[type=date]{display:block;text-align:left}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--pine2);outline-offset:1px}
+.bar input,.bar select{width:auto;min-width:200px}
+.btn{background:var(--pine);color:#fff;border:0;padding:9px 16px;cursor:pointer;font-weight:600}
+.btn:disabled{opacity:.45}
+.btn.ghost{background:none;color:var(--pine);border:1px solid var(--line)}
+.btn.sm{padding:4px 10px;font-size:14px;min-height:40px}
+.btn.del{background:none;color:var(--red);border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px}
+.stat span{color:var(--mute);font-size:13px}.stat strong{display:block;font-size:24px;font-weight:800}
+.stat.warn strong{color:var(--amber)}.stat.bad strong{color:var(--red)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:18px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--mute);font-weight:600;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 8px;border-bottom:1px solid #edf1ef;vertical-align:middle}
+td.r,th.r{text-align:right}
+.tag{padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.tag.ok{background:var(--okbg);color:var(--ok)}.tag.warn{background:var(--amberbg);color:var(--amber)}.tag.bad{background:var(--redbg);color:var(--red)}
+.empty{color:var(--mute);padding:14px 0}
+.bn{padding:12px 16px;border-radius:8px;margin-bottom:16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.bn.warn{background:var(--amberbg);color:var(--amber)}.bn.bad{background:var(--redbg);color:var(--red)}
+.pos{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+.pick{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:0;border-bottom:1px solid #edf1ef;padding:10px 4px;cursor:pointer;min-height:48px}
+.tot{display:flex;justify-content:space-between;font-size:20px;font-weight:800;margin:14px 0}
+.qty{width:70px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.plan{border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:8px}.plan.cur{border:2px solid var(--pine)}
+.plan strong{font-size:24px}
+dialog{border:0;border-radius:12px;padding:24px;width:min(520px,94vw);max-height:88vh;max-height:88dvh;overflow:auto;color:var(--ink)}
+dialog[open]{display:block}
+dialog:not([open]){display:none}
+dialog::backdrop{background:rgba(15,61,62,.55)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:grid;gap:4px;font-size:13px;color:var(--mute);font-weight:600}
+#toast{position:fixed;bottom:calc(20px + var(--sb));left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;z-index:99;max-width:92vw;text-align:center}
+#ios{position:fixed;left:12px;right:12px;bottom:calc(12px + var(--sb));background:var(--ink);color:#fff;border-radius:12px;padding:14px 16px;z-index:50;display:flex;gap:12px;align-items:center;justify-content:space-between}
+#ios button{background:#fff;color:var(--ink);border:0;padding:6px 14px;min-height:40px}
+.link{background:none;border:0;color:var(--pine2);text-decoration:underline;min-height:36px;cursor:pointer}
+@media(max-width:800px){
+  #app{grid-template-columns:1fr}
+  nav{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;align-items:center;overflow-x:auto;overflow-y:hidden;padding:6px 6px calc(6px + var(--sb));z-index:5;-webkit-overflow-scrolling:touch}
+  nav b,nav small,nav .sp{display:none}nav button{white-space:nowrap;flex:0 0 auto}
+  main{padding:calc(16px + var(--st)) 16px calc(92px + var(--sb))}
+  .cols,.pos{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}
+  #ios{bottom:calc(76px + var(--sb))}
+}
+@media print{nav,.bar,.btn,#ios{display:none!important}#app{display:block}}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <form id="loginForm">
+    <h1>PharmaDesk</h1>
+    <p style="margin:0;color:var(--mute)">Sign in to manage your pharmacy.</p>
+    <input id="email" type="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Email" required autocomplete="username">
+    <input id="pass" type="password" placeholder="Password (6+ characters)" required minlength="6" autocomplete="current-password">
+    <button class="btn" type="submit">Sign in</button>
+    <button class="btn ghost" type="button" id="signup">Create account</button>
+    <button class="link" type="button" id="forgot">Forgot password?</button>
+    <small id="loginErr" style="color:var(--red)"></small>
+  </form>
+</section>
+<section id="gate" class="hide"></section>
+<div id="app" class="hide"><nav id="nav"></nav><main id="view"></main></div>
+<dialog id="dlg"></dialog>
+<div id="toast" class="hide"></div>
+<div id="ios" class="hide"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,initializeFirestore,persistentLocalCache,persistentMultipleTabManager,memoryLocalCache,collection,doc,getDoc,setDoc,updateDoc,deleteDoc,deleteField,writeBatch,onSnapshot,query,where,runTransaction} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ===== Paste your Firebase web app config here ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyD3AmWay-Nf-jhBnDmSOZzhzRAkP9jAwoE",
+  authDomain: "pharma-968c9.firebaseapp.com",
+  projectId: "pharma-968c9",
+  storageBucket: "pharma-968c9.firebasestorage.app",
+  messagingSenderId: "899140240982",
+  appId: "1:899140240982:web:07c3c874f76fbf4a29ddf7",
+  measurementId: "G-V4BY5QWRSP"
+};
+const BRAND = "PharmaDesk", PC = "GH₵", TRIAL_DAYS = 14, EXPIRY_WARN_DAYS = 90, SUPPORT = "support@yourdomain.com";
+// Defaults for billing. The platform owner can change these in the Settings screen (stored in platform/settings).
+const DEFAULTS = {plans: {basic: {name: "Basic", price: 100, staff: 3, products: 1000}, pro: {name: "Pro", price: 250, staff: 15, products: 20000}},
+  instructions: "Pay by mobile money or bank transfer to the account shown here, then tap “I've paid” and enter your payment reference. Access is extended once the payment is confirmed."};
+
+const app = initializeApp(firebaseConfig), auth = getAuth(app);
+let db;
+// iOS Safari can block IndexedDB (private mode, in-app browsers): fall back to memory cache instead of crashing.
+// Auto long-polling avoids WebKit streaming issues on flaky mobile networks.
+try { db = initializeFirestore(app, {localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()}), experimentalAutoDetectLongPolling: true}); }
+catch (e) { try { db = initializeFirestore(app, {localCache: memoryLocalCache(), experimentalAutoDetectLongPolling: true}); } catch (e2) { db = getFirestore(app); } }
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const now = () => Date.now(), DAY = 864e5;
+const ld = (d = new Date()) => new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);   // local date, not UTC
+const daysTo = d => Math.ceil((new Date(d + "T00:00:00") - new Date(ld() + "T00:00:00")) / DAY);        // explicit time: safe on iOS
+const fmtD = t => t ? ld(new Date(t)) : "";
+const list = s => s.docs.map(d => ({id: d.id, ...d.data()}));
+const byName = (a, b) => (a.name || "").localeCompare(b.name || "");
+let CUR = PC; const money = n => CUR + " " + (+n || 0).toFixed(2), pm = n => PC + " " + (+n || 0).toFixed(2);
+
+let user, role, profile, shop, meds = [], sales = [], custs = [], members = [], invites = [], pays = [], shops = [], settings = DEFAULTS;
+let view = "", cart = [], q = "", unsubs = [];
+const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.remove("hide"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add("hide"), 3200); };
+
+/* ---------- iPhone / install helpers ---------- */
+const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+let deferred = null;
+const store = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }};
+function installHint() {
+  const b = $("#ios"); if (standalone || store.get("hint")) return;
+  if (iOS) b.innerHTML = `<span>Install on iPhone: tap <b>Share</b> (square with arrow), then <b>Add to Home Screen</b>.</span><button id="hintX">Got it</button>`;
+  else if (deferred) b.innerHTML = `<span>Install ${BRAND} on this device.</span><button id="hintGo">Install</button>`;
+  else return;
+  b.classList.remove("hide");
+}
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; installHint(); });
+installHint();
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").then(r => document.addEventListener("visibilitychange", () => { if (!document.hidden) r.update().catch(() => {}); })).catch(() => {}));
+window.addEventListener("offline", () => toast("You're offline. Completing a sale needs a connection."));
+window.addEventListener("online", () => toast("Back online"));
+const openDlg = d => typeof d.showModal === "function" ? d.showModal() : d.setAttribute("open", "");   // older iOS lacks <dialog>
+const closeDlg = d => typeof d.close === "function" ? d.close() : d.removeAttribute("open");
+
+/* ---------- Auth & onboarding ---------- */
+const authErr = (err, p) => $("#loginErr").textContent = p + ": " + (err.code || err.message).replace("auth/", "").replace(/-/g, " ");
+$("#loginForm").onsubmit = async e => { e.preventDefault(); try { await signInWithEmailAndPassword(auth, $("#email").value.trim(), $("#pass").value); } catch (err) { authErr(err, "Could not sign in"); } };
+$("#signup").onclick = async () => { try { await createUserWithEmailAndPassword(auth, $("#email").value.trim(), $("#pass").value); } catch (err) { authErr(err, "Could not create account"); } };
+$("#forgot").onclick = async () => { const m = $("#email").value.trim(); if (!m) return authErr({message: "enter your email first"}, "Reset"); try { await sendPasswordResetEmail(auth, m); toast("Password reset email sent"); } catch (err) { authErr(err, "Reset failed"); } };
+
+function reset() { unsubs.forEach(f => f()); unsubs = []; role = profile = shop = null; meds = []; sales = []; custs = []; members = []; invites = []; pays = []; shops = []; cart = []; view = ""; CUR = PC; }
+const show = which => { $("#login").classList.toggle("hide", which !== "login"); $("#gate").classList.toggle("hide", which !== "gate"); $("#app").classList.toggle("hide", which !== "app"); };
+const w = (ref, fn) => unsubs.push(onSnapshot(ref, s => { fn(s); render(); }, e => toast("Database error: " + e.code)));
+
+onAuthStateChanged(auth, async u => {
+  reset(); user = u;
+  if (!u) return show("login");
+  try { navigator.storage?.persist?.(); } catch (e) {}          // ask iOS/Android not to evict offline data
+  try {
+    if ((await getDoc(doc(db, "owners", u.uid))).exists()) return startOwner();
+    const p = await getDoc(doc(db, "users", u.uid));
+    if (p.exists()) { profile = p.data(); return startShop(); }
+    await findInvite();
+  } catch (err) { toast("Could not load your account: " + (err.code || err.message)); show("login"); }
+});
+
+async function findInvite() {
+  const e = user.email.toLowerCase(), inv = await getDoc(doc(db, "invites", e));
+  if (!inv.exists()) return gate();
+  const d = inv.data(), b = writeBatch(db);
+  b.set(doc(db, "users", user.uid), {email: e, shopId: d.shopId, role: d.role});
+  b.set(doc(db, "shops", d.shopId, "members", user.uid), {email: e, role: d.role});
+  b.delete(doc(db, "invites", e));
+  await b.commit(); profile = {email: e, shopId: d.shopId, role: d.role}; toast("You joined " + (d.shopName || "the pharmacy")); startShop();
+}
+function gate() {
+  show("gate");
+  $("#gate").innerHTML = `<form id="gateForm"><h1>Set up your pharmacy</h1><p style="margin:0;color:var(--mute)">Start a ${TRIAL_DAYS}-day free trial. No payment needed.</p>
+  <input id="gName" placeholder="Pharmacy name" required autocomplete="organization"><input id="gPhone" type="tel" placeholder="Phone (optional)" autocomplete="tel">
+  <button class="btn">Start free trial</button><button class="btn ghost" type="button" id="gInv">I was invited to a pharmacy</button><button class="link" type="button" id="gOut">Sign out</button></form>`;
+}
+async function createShop(name, phone) {
+  const sid = doc(collection(db, "shops")).id, t = now(), e = user.email.toLowerCase(), b = writeBatch(db);
+  b.set(doc(db, "shops", sid), {name, phone, currency: PC, plan: "trial", status: "trial", paidUntil: t + TRIAL_DAYS * DAY, ownerUid: user.uid, ownerEmail: e, createdAt: t});
+  b.set(doc(db, "users", user.uid), {email: e, shopId: sid, role: "admin"});
+  b.set(doc(db, "shops", sid, "members", user.uid), {email: e, role: "admin"});
+  await b.commit(); profile = {email: e, shopId: sid, role: "admin"}; startShop();
+}
+
+/* ---------- Data listeners ---------- */
+function startShop() {
+  role = "shop"; show("app"); installHint();
+  const sid = profile.shopId, col = n => collection(db, "shops", sid, n);
+  w(doc(db, "shops", sid), s => { shop = {id: s.id, ...s.data()}; CUR = shop.currency || PC; });
+  w(col("medicines"), s => meds = list(s).sort(byName));
+  w(col("sales"), s => sales = list(s).sort((a, b) => b.ts - a.ts));
+  w(col("customers"), s => custs = list(s).sort(byName));
+  w(doc(db, "platform", "settings"), s => settings = s.exists() ? {...DEFAULTS, ...s.data()} : DEFAULTS);
+  if (profile.role === "admin") {
+    w(col("members"), s => members = list(s));
+    w(query(collection(db, "invites"), where("shopId", "==", sid)), s => invites = list(s));
+    w(query(collection(db, "payments"), where("shopId", "==", sid)), s => pays = list(s).sort((a, b) => b.ts - a.ts));
+  }
+}
+function startOwner() {
+  role = "owner"; show("app"); installHint();
+  w(collection(db, "shops"), s => shops = list(s).sort(byName));
+  w(collection(db, "payments"), s => pays = list(s).sort((a, b) => b.ts - a.ts));
+  w(doc(db, "platform", "settings"), s => settings = s.exists() ? {...DEFAULTS, ...s.data()} : DEFAULTS);
+}
+
+/* ---------- Subscription helpers ---------- */
+const canWrite = () => shop && shop.status !== "suspended" && shop.paidUntil > now();
+const lim = () => settings.plans[shop.plan] || settings.plans.basic;
+const sub = s => {
+  if (s.status === "suspended") return ["bad", "Suspended"];
+  const d = Math.ceil((s.paidUntil - now()) / DAY);
+  if (d < 0) return ["bad", "Expired"];
+  return [d <= 5 ? "warn" : "ok", (s.plan === "trial" ? "Trial" : "Active") + " · " + d + "d left"];
+};
+const subTag = s => { const [c, t] = sub(s); return `<span class="tag ${c}">${t}</span>`; };
+function banner() {
+  if (role !== "shop" || !shop) return "";
+  const d = Math.ceil((shop.paidUntil - now()) / DAY), go = profile.role === "admin" ? `<button class="btn sm" data-v="billing">Renew</button>` : "<span>Ask your pharmacy admin to renew.</span>";
+  if (shop.status === "suspended") return `<div class="bn bad"><span>This pharmacy is suspended. Contact ${esc(SUPPORT)}. Your data is safe.</span></div>`;
+  if (d < 0) return `<div class="bn bad"><span>Subscription expired. Your data is safe but read-only until you renew.</span>${go}</div>`;
+  if (d <= 5) return `<div class="bn warn"><span>Your ${shop.plan === "trial" ? "trial" : "subscription"} ends in ${d} day${d === 1 ? "" : "s"}.</span>${go}</div>`;
+  return "";
+}
+
+/* ---------- Navigation & render ---------- */
+const NAV = {
+  owner: [["ovr", "Overview"], ["shops", "Pharmacies"], ["pays", "Payments"], ["cfg", "Settings"]],
+  admin: [["dash", "Home"], ["pos", "New sale"], ["inv", "Inventory"], ["hist", "Sales"], ["cust", "Customers"], ["team", "Shop & team"], ["billing", "Billing"]],
+  staff: [["dash", "Home"], ["pos", "New sale"], ["inv", "Inventory"], ["hist", "Sales"], ["cust", "Customers"]]
+};
+function render() {
+  if (!role || (role === "shop" && !shop)) return;
+  const items = role === "owner" ? NAV.owner : NAV[profile.role] || NAV.staff;
+  if (!items.some(i => i[0] === view)) view = items.some(i => i[0] === location.hash.slice(1)) ? location.hash.slice(1) : items[0][0];
+  $("#nav").innerHTML = `<b>${BRAND}${role === "owner" ? " Admin" : ""}</b>` + items.map(([k, l]) => `<button data-v="${k}" class="${k === view ? "on" : ""}">${l}</button>`).join("") + `<span class="sp"></span><small>${esc(role === "shop" ? shop.name + " · " : "")}${esc(user.email)}</small><button id="out">Sign out</button>`;
+  $("#view").innerHTML = banner() + V[view]();
+}
+
+/* ---------- Shop views ---------- */
+const status = m => {
+  const d = daysTo(m.expiry);
+  if (m.expiry && d < 0) return ["bad", "Expired"]; if (m.qty <= 0) return ["bad", "Out of stock"];
+  if (m.qty <= m.reorder) return ["warn", "Low stock"]; if (m.expiry && d <= EXPIRY_WARN_DAYS) return ["warn", "Expires in " + d + "d"];
+  return ["ok", "In stock"];
+};
+const tag = m => { const [c, t] = status(m); return `<span class="tag ${c}">${t}</span>`; };
+const cartTotal = () => cart.reduce((s, c) => s + c.price * c.qty, 0);
+const empty = t => `<div class="empty">${t}</div>`;
+
+function dash() {
+  const t = ld(), todays = sales.filter(s => s.day === t);
+  const low = meds.filter(m => m.qty <= m.reorder && !(m.expiry && daysTo(m.expiry) < 0));
+  const soon = meds.filter(m => m.expiry && daysTo(m.expiry) >= 0 && daysTo(m.expiry) <= EXPIRY_WARN_DAYS);
+  const gone = meds.filter(m => m.expiry && daysTo(m.expiry) < 0);
+  const rows = a => a.length ? `<table>${a.slice(0, 8).map(m => `<tr><td>${esc(m.name)}<br><small>${esc(m.batch)}</small></td><td class="r">${m.qty} left</td><td class="r">${esc(m.expiry)}</td></tr>`).join("")}</table>` : empty("Nothing to show.");
+  return `<h2>${esc(shop.name)}</h2><div class="stats">
+    <div class="stat"><span>Sales today</span><strong>${money(todays.reduce((s, x) => s + x.total, 0))}</strong><small>${todays.length} transactions</small></div>
+    <div class="stat"><span>Stock value (at cost)</span><strong>${money(meds.reduce((s, m) => s + m.qty * m.cost, 0))}</strong><small>${meds.length} products</small></div>
+    <div class="stat warn"><span>Low or out of stock</span><strong>${low.length}</strong></div>
+    <div class="stat warn"><span>Expiring in ${EXPIRY_WARN_DAYS} days</span><strong>${soon.length}</strong></div>
+    <div class="stat bad"><span>Expired batches</span><strong>${gone.length}</strong></div></div>
+    <div class="cols"><div class="panel"><h3>Reorder soon</h3>${rows(low)}</div>
+    <div class="panel"><h3>Expiring soon</h3>${rows(soon)}<h3 style="margin-top:14px">Expired: remove from shelves</h3>${rows(gone)}</div></div>`;
+}
+function inv() {
+  const f = meds.filter(m => (m.name + m.generic + m.batch + m.category).toLowerCase().includes(q.toLowerCase())), adm = profile.role === "admin";
+  return `<div class="bar"><h2>Inventory</h2><input id="search" placeholder="Search name, batch, category" value="${esc(q)}"><button class="btn" data-act="addMed" ${canWrite() ? "" : "disabled"}>Add medicine</button></div>
+  <div class="panel">${f.length ? `<table><tr><th>Medicine</th><th>Category</th><th>Batch</th><th>Expiry</th><th class="r">Qty</th><th class="r">Price</th><th>Status</th><th></th></tr>
+  ${f.map(m => `<tr><td><b>${esc(m.name)}</b><br><small>${esc(m.generic)}</small></td><td>${esc(m.category)}</td><td>${esc(m.batch)}</td><td>${esc(m.expiry)}</td><td class="r">${m.qty}</td><td class="r">${money(m.price)}</td><td>${tag(m)}</td>
+  <td class="r"><button class="btn ghost sm" data-act="editMed" data-id="${m.id}" ${canWrite() ? "" : "disabled"}>Edit</button> ${adm ? `<button class="btn del sm" data-act="delMed" data-id="${m.id}" ${canWrite() ? "" : "disabled"}>Delete</button>` : ""}</td></tr>`).join("")}</table>` : empty("No medicines yet. Add your first product to start tracking stock.")}</div>`;
+}
+function posList() {
+  const f = meds.filter(m => m.qty > 0 && !(m.expiry && daysTo(m.expiry) < 0) && (m.name + m.generic + m.batch).toLowerCase().includes(q.toLowerCase())).slice(0, 30);
+  return f.length ? f.map(m => `<button class="pick" data-act="addCart" data-id="${m.id}"><span><b>${esc(m.name)}</b> <small>${esc(m.batch)} · exp ${esc(m.expiry)}</small></span><span>${money(m.price)} · ${m.qty} in stock</span></button>`).join("") : empty("No sellable stock matches your search.");
+}
+function pos() {
+  return `<h2>New sale</h2><div class="pos"><div class="panel"><input id="posSearch" type="search" placeholder="Search medicine or batch" value="${esc(q)}" style="margin-bottom:8px"><div id="posList">${posList()}</div></div>
+  <div class="panel"><h3>Cart</h3>${cart.length ? `<table>${cart.map((c, i) => `<tr><td>${esc(c.name)}<br><small>${money(c.price)}</small></td><td><input class="qty" type="number" inputmode="numeric" min="1" max="${c.max}" value="${c.qty}" data-act="qty" data-i="${i}"></td><td class="r">${money(c.price * c.qty)}</td><td><button class="btn del sm" data-act="rm" data-i="${i}">✕</button></td></tr>`).join("")}</table>` : empty("Select a medicine to add it to the cart.")}
+  <div class="tot"><span>Total</span><span>${money(cartTotal())}</span></div>
+  <div class="grid2"><label>Customer<select id="cust"><option value="">Walk-in</option>${custs.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join("")}</select></label>
+  <label>Payment<select id="pay"><option>Cash</option><option>Mobile money</option><option>Card</option><option>Insurance</option></select></label></div>
+  <button class="btn" style="width:100%;margin-top:14px" data-act="checkout" ${cart.length && canWrite() ? "" : "disabled"}>Complete sale</button></div></div>`;
+}
+function hist() {
+  return `<div class="bar"><h2>Sales history</h2><button class="btn ghost" onclick="window.print()">Print</button></div><div class="panel">${sales.length ? `<table><tr><th>Date</th><th>Items</th><th>Customer</th><th>Payment</th><th>Cashier</th><th class="r">Total</th></tr>
+  ${sales.map(s => `<tr><td>${esc(s.day)}</td><td>${s.items.map(i => esc(i.name) + " ×" + i.qty).join(", ")}</td><td>${esc(s.customer || "Walk-in")}</td><td>${esc(s.payment)}</td><td>${esc(s.by)}</td><td class="r">${money(s.total)}</td></tr>`).join("")}</table>` : empty("No sales recorded yet.")}</div>`;
+}
+function cust() {
+  const adm = profile.role === "admin";
+  return `<div class="bar"><h2>Customers</h2><button class="btn" data-act="addCust" ${canWrite() ? "" : "disabled"}>Add customer</button></div><div class="panel">${custs.length ? `<table><tr><th>Name</th><th>Phone</th><th>Notes (allergies, conditions)</th><th></th></tr>
+  ${custs.map(c => `<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.phone)}</td><td>${esc(c.notes)}</td><td class="r"><button class="btn ghost sm" data-act="editCust" data-id="${c.id}" ${canWrite() ? "" : "disabled"}>Edit</button> ${adm ? `<button class="btn del sm" data-act="delCust" data-id="${c.id}" ${canWrite() ? "" : "disabled"}>Delete</button>` : ""}</td></tr>`).join("")}</table>` : empty("No customers yet. Add one to link sales and keep allergy notes.")}</div>`;
+}
+function team() {
+  const me = user.uid;
+  return `<div class="bar"><h2>Shop & team</h2><button class="btn ghost" data-act="editShop">Edit shop details</button></div>
+  <div class="panel"><h3>${esc(shop.name)}</h3><p style="margin:0;color:var(--mute)">${esc(shop.phone || "No phone")} · ${esc(shop.address || "No address")} · Currency ${esc(shop.currency)}</p></div>
+  <div class="bar"><h3 style="margin:0;flex:1">Team (${members.length + invites.length} of ${lim().staff})</h3><button class="btn" data-act="invite" ${canWrite() ? "" : "disabled"}>Invite staff</button></div>
+  <div class="panel"><table><tr><th>Email</th><th>Role</th><th></th></tr>
+  ${members.map(m => `<tr><td>${esc(m.email)}</td><td>${esc(m.role)}</td><td class="r">${m.id === me ? "<small>You</small>" : `<button class="btn del sm" data-act="rmMember" data-id="${m.id}">Remove</button>`}</td></tr>`).join("")}
+  ${invites.map(i => `<tr><td>${esc(i.email)}</td><td>${esc(i.role)} <span class="tag warn">Invited</span></td><td class="r"><button class="btn del sm" data-act="rmInvite" data-id="${i.id}">Cancel</button></td></tr>`).join("")}</table>
+  <p><small>Invited staff sign up with the same email address and are added to this pharmacy automatically.</small></p></div>`;
+}
+function billing() {
+  const [, st] = sub(shop), pend = shop.payRequest;
+  return `<h2>Billing</h2><div class="stats"><div class="stat"><span>Plan</span><strong>${esc((settings.plans[shop.plan] || {name: "Free trial"}).name)}</strong></div>
+  <div class="stat"><span>Status</span><strong style="font-size:18px">${st}</strong></div><div class="stat"><span>Paid until</span><strong style="font-size:20px">${fmtD(shop.paidUntil)}</strong></div></div>
+  ${pend ? `<div class="bn warn"><span>Payment reported (${esc(pend.ref)}). We'll confirm it shortly.</span></div>` : ""}
+  <div class="plans" style="margin-bottom:18px">${Object.entries(settings.plans).map(([k, p]) => `<div class="plan ${shop.plan === k ? "cur" : ""}"><b>${esc(p.name)}</b><strong>${pm(p.price)}<small>/month</small></strong><span>Up to ${p.staff} staff, ${p.products} products</span><button class="btn" data-act="pay" data-id="${k}">Pay for ${esc(p.name)}</button></div>`).join("")}</div>
+  <div class="panel"><h3>How to pay</h3><p style="margin:0;white-space:pre-wrap">${esc(settings.instructions)}</p></div>
+  <div class="panel"><h3>Payment history</h3>${payTable(pays, false)}</div>`;
+}
+
+/* ---------- Platform owner views ---------- */
+const payTable = (a, wide) => a.length ? `<table><tr><th>Date</th>${wide ? "<th>Pharmacy</th>" : ""}<th>Plan</th><th>Months</th><th>Method</th><th>Reference</th><th class="r">Amount</th></tr>${a.map(p => `<tr><td>${fmtD(p.ts)}</td>${wide ? `<td>${esc(p.shopName)}</td>` : ""}<td>${esc(p.plan)}</td><td>${p.months}</td><td>${esc(p.method)}</td><td>${esc(p.ref)}</td><td class="r">${pm(p.amount)}</td></tr>`).join("")}</table>` : empty("No payments yet.");
+function ovr() {
+  const t = now(), live = shops.filter(s => s.status !== "suspended" && s.paidUntil > t), paid = live.filter(s => s.plan !== "trial");
+  const mrr = paid.reduce((a, s) => a + (settings.plans[s.plan]?.price || 0), 0);
+  const m0 = new Date(); m0.setDate(1); m0.setHours(0, 0, 0, 0);
+  const rev = pays.filter(p => p.ts >= m0.getTime()).reduce((a, p) => a + p.amount, 0);
+  const reqs = shops.filter(s => s.payRequest), soon = live.filter(s => s.paidUntil - t < 7 * DAY);
+  const mini = a => a.length ? `<table>${a.map(s => `<tr><td>${esc(s.name)}</td><td>${subTag(s)}</td><td class="r"><button class="btn ghost sm" data-act="recPay" data-id="${s.id}">Record payment</button></td></tr>`).join("")}</table>` : empty("None.");
+  return `<h2>Platform overview</h2><div class="stats">
+  <div class="stat"><span>Pharmacies</span><strong>${shops.length}</strong></div><div class="stat"><span>Paying</span><strong>${paid.length}</strong></div>
+  <div class="stat"><span>On trial</span><strong>${live.length - paid.length}</strong></div><div class="stat bad"><span>Expired or suspended</span><strong>${shops.length - live.length}</strong></div>
+  <div class="stat"><span>Monthly recurring revenue</span><strong>${pm(mrr)}</strong></div><div class="stat"><span>Collected this month</span><strong>${pm(rev)}</strong></div></div>
+  <div class="cols"><div class="panel"><h3>Payments to confirm (${reqs.length})</h3>${mini(reqs)}</div><div class="panel"><h3>Ending within 7 days</h3>${mini(soon)}</div></div>`;
+}
+function shopsV() {
+  const f = shops.filter(s => (s.name + s.ownerEmail).toLowerCase().includes(q.toLowerCase()));
+  return `<div class="bar"><h2>Pharmacies</h2><input id="search" type="search" placeholder="Search name or owner email" value="${esc(q)}"></div><div class="panel">${f.length ? `<table><tr><th>Pharmacy</th><th>Owner</th><th>Plan</th><th>Status</th><th>Until</th><th></th></tr>
+  ${f.map(s => `<tr><td><b>${esc(s.name)}</b><br><small>${esc(s.phone)}</small></td><td>${esc(s.ownerEmail)}</td><td>${esc(s.plan)}</td><td>${subTag(s)}${s.payRequest ? ` <span class="tag warn">Paid? ${esc(s.payRequest.ref)}</span>` : ""}</td><td>${fmtD(s.paidUntil)}</td>
+  <td class="r"><button class="btn sm" data-act="recPay" data-id="${s.id}">Record payment</button> <button class="btn ghost sm" data-act="ext" data-id="${s.id}">+7 days</button> <button class="btn ${s.status === "suspended" ? "ghost" : "del"} sm" data-act="${s.status === "suspended" ? "restore" : "suspend"}" data-id="${s.id}">${s.status === "suspended" ? "Restore" : "Suspend"}</button></td></tr>`).join("")}</table>` : empty("No pharmacies have signed up yet.")}</div>`;
+}
+function paysV() { return `<h2>Payments</h2><div class="stats"><div class="stat"><span>Total collected</span><strong>${pm(pays.reduce((a, p) => a + p.amount, 0))}</strong></div></div><div class="panel">${payTable(pays, true)}</div>`; }
+function cfg() {
+  const b = settings.plans.basic, p = settings.plans.pro;
+  return `<h2>Billing settings</h2><div class="panel"><table><tr><th>Plan</th><th class="r">Price / month</th><th class="r">Staff</th><th class="r">Products</th></tr><tr><td>Basic</td><td class="r">${pm(b.price)}</td><td class="r">${b.staff}</td><td class="r">${b.products}</td></tr><tr><td>Pro</td><td class="r">${pm(p.price)}</td><td class="r">${p.staff}</td><td class="r">${p.products}</td></tr></table>
+  <p style="white-space:pre-wrap">${esc(settings.instructions)}</p><button class="btn" data-act="editCfg">Edit plans and payment instructions</button></div>`;
+}
+const V = {dash, pos, inv, hist, cust, team, billing, ovr, shops: shopsV, pays: paysV, cfg};
+
+/* ---------- Dialog form ---------- */
+function form(title, fields, vals, onSave) {
+  const d = $("#dlg");
+  d.innerHTML = `<form method="dialog" id="f"><h3>${title}</h3><div class="grid2">${fields.map(([k, l, t = "text", req = 1, opts]) => `<label style="${t === "wide" || t === "area" ? "grid-column:1/-1" : ""}">${l}${
+    t === "select" ? `<select name="${k}">${opts.map(([v, n]) => `<option value="${v}" ${String(vals[k]) === String(v) ? "selected" : ""}>${n}</option>`).join("")}</select>` :
+    t === "area" ? `<textarea name="${k}" rows="4" style="font:inherit;font-size:16px;padding:9px 12px;border:1px solid var(--line);border-radius:8px">${esc(vals[k])}</textarea>` :
+    `<input name="${k}" type="${t === "wide" ? "text" : t}" ${req ? "required" : ""} ${t === "number" ? 'step="any" min="0" inputmode="decimal"' : ""} ${t === "email" ? 'inputmode="email" autocapitalize="none"' : ""} value="${esc(vals[k] ?? "")}">`}</label>`).join("")}</div>
+  <div class="bar" style="margin:18px 0 0;justify-content:flex-end"><button class="btn ghost" type="button" id="cx">Cancel</button><button class="btn">Save</button></div></form>`;
+  openDlg(d);
+  $("#cx").onclick = () => closeDlg(d);
+  $("#f").onsubmit = async e => {
+    e.preventDefault();
+    const o = Object.fromEntries(new FormData(e.target)); fields.forEach(([k,, t]) => { if (t === "number") o[k] = +o[k] || 0; });
+    try { await onSave(o); closeDlg(d); toast("Saved"); } catch (err) { toast("Could not save: " + (err.code || err.message)); }
+  };
+}
+const medFields = [["name", "Medicine name"], ["generic", "Generic name", "text", 0], ["category", "Category"], ["batch", "Batch number"], ["qty", "Quantity", "number"], ["reorder", "Reorder level", "number"], ["cost", "Cost price", "number"], ["price", "Selling price", "number"], ["expiry", "Expiry date", "date"], ["supplier", "Supplier", "text", 0]];
+const custFields = [["name", "Full name"], ["phone", "Phone", "tel", 0], ["notes", "Notes", "wide", 0]];
+const planOpts = () => Object.entries(settings.plans).map(([k, p]) => [k, p.name]);
+
+/* ---------- Actions ---------- */
+const sref = (n, id) => id ? doc(db, "shops", profile.shopId, n, id) : collection(db, "shops", profile.shopId, n);
+async function checkout() {
+  if (!canWrite()) return toast("Subscription expired. Renew to record sales.");
+  const customer = $("#cust").value, payment = $("#pay").value, items = cart.map(c => ({id: c.id, name: c.name, price: c.price, qty: c.qty}));
+  try {
+    await runTransaction(db, async tx => {
+      const refs = items.map(i => sref("medicines", i.id)), snaps = [];
+      for (const r of refs) snaps.push(await tx.get(r));
+      snaps.forEach((s, i) => { if (!s.exists() || s.data().qty < items[i].qty) throw new Error("Not enough stock for " + items[i].name); });
+      snaps.forEach((s, i) => tx.update(refs[i], {qty: s.data().qty - items[i].qty}));
+      tx.set(doc(sref("sales")), {items, total: cartTotal(), customer, payment, by: user.email, day: ld(), ts: now()});
+    });
+    cart = []; toast("Sale completed"); render();
+  } catch (err) { toast(err.message); }
+}
+async function recordPay(sid, o) {
+  const s = shops.find(x => x.id === sid), d = new Date(Math.max(now(), s.paidUntil || 0)); d.setMonth(d.getMonth() + (+o.months));
+  const b = writeBatch(db);
+  b.set(doc(collection(db, "payments")), {shopId: sid, shopName: s.name, plan: o.plan, months: +o.months, amount: +o.amount, method: o.method, ref: o.ref || "", by: user.email, ts: now()});
+  b.update(doc(db, "shops", sid), {plan: o.plan, status: "active", paidUntil: d.getTime(), payRequest: deleteField()});
+  await b.commit();
+}
+async function rmMember(id) {
+  const b = writeBatch(db); b.delete(sref("members", id)); b.delete(doc(db, "users", id)); await b.commit();
+}
+
+document.addEventListener("click", async e => {
+  const t = e.target;
+  if (t.id === "out" || t.id === "gOut") return signOut(auth);
+  if (t.id === "gInv") { try { await findInvite(); if (role !== "shop") toast("No invitation found for " + user.email); } catch (err) { toast("Could not check invitations: " + (err.code || err.message)); } return; }
+  if (t.id === "hintX") { store.set("hint", "1"); return $("#ios").classList.add("hide"); }
+  if (t.id === "hintGo" && deferred) { deferred.prompt(); deferred = null; return $("#ios").classList.add("hide"); }
+  const n = t.closest("[data-v]"); if (n) { view = n.dataset.v; q = ""; history.replaceState(null, "", "#" + view); return render(); }
+  const b = t.closest("[data-act]"); if (!b || b.tagName === "INPUT") return;
+  const {act, id, i} = b.dataset, sh = shops.find(s => s.id === id);
+  const med = meds.find(m => m.id === id), cu = custs.find(c => c.id === id);
+  const done = d => () => closeDlg($("#dlg"));
+  if (act === "addMed") { if (meds.length >= lim().products) return toast("Product limit reached for your plan."); form("Add medicine", medFields, {qty: 0, reorder: 10}, o => setDoc(doc(sref("medicines")), o)); }
+  if (act === "editMed") form("Edit medicine", medFields, med, o => setDoc(sref("medicines", id), o, {merge: true}));
+  if (act === "delMed" && confirm("Delete this medicine permanently?")) deleteDoc(sref("medicines", id));
+  if (act === "addCust") form("Add customer", custFields, {}, o => setDoc(doc(sref("customers")), o));
+  if (act === "editCust") form("Edit customer", custFields, cu, o => setDoc(sref("customers", id), o, {merge: true}));
+  if (act === "delCust" && confirm("Delete this customer?")) deleteDoc(sref("customers", id));
+  if (act === "addCart") { const c = cart.find(x => x.id === id); if (c) c.qty = Math.min(c.qty + 1, med.qty); else cart.push({id, name: med.name, price: med.price, qty: 1, max: med.qty}); render(); }
+  if (act === "rm") { cart.splice(+i, 1); render(); }
+  if (act === "checkout") checkout();
+  if (act === "editShop") form("Shop details", [["name", "Pharmacy name"], ["phone", "Phone", "tel", 0], ["address", "Address", "wide", 0], ["currency", "Currency symbol"]], shop, o => updateDoc(doc(db, "shops", shop.id), o));
+  if (act === "invite") { if (members.length + invites.length >= lim().staff) return toast("Staff limit reached for your plan. Upgrade to add more.");
+    form("Invite staff", [["email", "Email", "email"], ["role", "Role", "select", 1, [["staff", "Staff"], ["admin", "Admin"]]]], {role: "staff"}, async o => { const em = o.email.trim().toLowerCase(); await setDoc(doc(db, "invites", em), {email: em, role: o.role, shopId: shop.id, shopName: shop.name, by: user.email}); toast("Invite saved. Ask them to sign up with " + em); }); }
+  if (act === "rmMember" && confirm("Remove this person's access?")) rmMember(id).catch(err => toast(err.code));
+  if (act === "rmInvite") deleteDoc(doc(db, "invites", id));
+  if (act === "pay") form("Pay for " + settings.plans[id].name, [["plan", "Plan", "select", 1, planOpts()], ["months", "Months", "select", 1, [[1, "1 month"], [3, "3 months"], [6, "6 months"], [12, "12 months"]]], ["ref", "Payment reference"]], {plan: id, months: 1},
+    o => updateDoc(doc(db, "shops", shop.id), {payRequest: {plan: o.plan, months: +o.months, ref: o.ref, ts: now()}}));
+  if (act === "recPay") { const r = sh.payRequest || {}, plan = r.plan || (sh.plan === "trial" ? "basic" : sh.plan), mo = r.months || 1;
+    form("Record payment: " + esc(sh.name), [["plan", "Plan", "select", 1, planOpts()], ["months", "Months", "select", 1, [[1, "1 month"], [3, "3 months"], [6, "6 months"], [12, "12 months"]]], ["amount", "Amount (" + PC + ")", "number"], ["method", "Method", "select", 1, [["Mobile money", "Mobile money"], ["Bank transfer", "Bank transfer"], ["Cash", "Cash"], ["Card", "Card"]]], ["ref", "Reference", "text", 0]],
+      {plan, months: mo, amount: (settings.plans[plan]?.price || 0) * mo, ref: r.ref || ""}, o => recordPay(id, o)); }
+  if (act === "ext") updateDoc(doc(db, "shops", id), {paidUntil: Math.max(now(), sh.paidUntil) + 7 * DAY}).then(() => toast("Extended by 7 days"));
+  if (act === "suspend" && confirm("Suspend " + sh.name + "? They will have read-only access.")) updateDoc(doc(db, "shops", id), {status: "suspended"});
+  if (act === "restore") updateDoc(doc(db, "shops", id), {status: sh.plan === "trial" ? "trial" : "active"});
+  if (act === "editCfg") { const b1 = settings.plans.basic, p1 = settings.plans.pro;
+    form("Billing settings", [["bp", "Basic price / month", "number"], ["bs", "Basic staff limit", "number"], ["bn", "Basic product limit", "number"], ["pp", "Pro price / month", "number"], ["ps", "Pro staff limit", "number"], ["pn", "Pro product limit", "number"], ["instructions", "Payment instructions", "area", 1]],
+      {bp: b1.price, bs: b1.staff, bn: b1.products, pp: p1.price, ps: p1.staff, pn: p1.products, instructions: settings.instructions},
+      o => setDoc(doc(db, "platform", "settings"), {plans: {basic: {name: "Basic", price: o.bp, staff: o.bs, products: o.bn}, pro: {name: "Pro", price: o.pp, staff: o.ps, products: o.pn}}, instructions: o.instructions})); }
+});
+document.addEventListener("submit", async e => {
+  if (e.target.id !== "gateForm") return; e.preventDefault();
+  try { await createShop($("#gName").value.trim(), $("#gPhone").value.trim()); } catch (err) { toast("Could not create pharmacy: " + (err.code || err.message)); }
+});
+document.addEventListener("change", e => {
+  if (e.target.dataset.act === "qty") { const c = cart[+e.target.dataset.i]; c.qty = Math.max(1, Math.min(c.max, +e.target.value || 1)); render(); }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "posSearch") { q = e.target.value; $("#posList").innerHTML = posList(); }
+  if (e.target.id === "search") { q = e.target.value; const p = e.target.selectionStart; render(); const s = $("#search"); s.focus(); try { s.setSelectionRange(p, p); } catch (x) {} }
+});
+</script>
+</body>
+</html>
