@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PharmaDesk – Pharmacy management</title>
+<title>Danest IT Consult Pharma – Pharmacy management</title>
 <meta name="theme-color" content="#0f3d3e">
 <meta name="description" content="Inventory, sales and customers for your pharmacy.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -13,7 +13,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="PharmaDesk">
+<meta name="apple-mobile-web-app-title" content="Danest Pharma">
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-startup-image" href="icons/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="icons/splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
@@ -40,10 +40,10 @@ button,input,select{font:inherit;font-size:16px;-webkit-appearance:none;appearan
 #login,#gate{min-height:100vh;min-height:100dvh;display:grid;place-items:center;background:var(--pine);padding:calc(20px + var(--st)) 20px calc(20px + var(--sb))}
 #gate{align-content:center;gap:14px}
 #login form,#gate form{background:var(--card);padding:30px;border-radius:12px;width:100%;max-width:400px;display:grid;gap:12px}
-#login h1,#gate h1{margin:0;font-size:28px;font-weight:800;color:var(--pine)}
+#login h1,#gate h1{margin:0;font-size:26px;line-height:1.2;font-weight:800;color:var(--pine)}
 #app{display:grid;grid-template-columns:220px 1fr;min-height:100vh;min-height:100dvh}
 nav{background:var(--pine);color:#cfe3df;padding:calc(20px + var(--st)) 12px 20px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;height:100dvh;overflow-y:auto}
-nav b{color:#fff;font-size:20px;font-weight:800;padding:0 10px 18px}
+nav b{color:#fff;font-size:17px;line-height:1.25;font-weight:800;padding:0 10px 18px}
 nav button{background:none;border:0;color:inherit;text-align:left;padding:10px;border-radius:8px;cursor:pointer}
 nav button.on{background:#fff;color:var(--pine);font-weight:600}
 nav .sp{flex:1}nav small{padding:0 10px;word-break:break-all;opacity:.7}
@@ -124,7 +124,7 @@ body.printing #printArea{display:block}body.printing #printArea.sheet{display:gr
 
 <section id="login">
   <form id="loginForm">
-    <h1>PharmaDesk</h1>
+    <h1>Danest IT Consult Pharma</h1>
     <p style="margin:0;color:var(--mute)">Sign in to manage your pharmacy.</p>
     <input id="email" type="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Email" required autocomplete="username">
     <input id="pass" type="password" placeholder="Password (6+ characters)" required minlength="6" autocomplete="current-password">
@@ -157,7 +157,7 @@ const firebaseConfig = {
   appId: "1:899140240982:web:07c3c874f76fbf4a29ddf7",
   measurementId: "G-V4BY5QWRSP"
 };
-const BRAND = "PharmaDesk", PC = "GH₵", TRIAL_DAYS = 14, EXPIRY_WARN_DAYS = 90, SUPPORT = "support@yourdomain.com";
+const BRAND = "Danest IT Consult Pharma", PC = "GH₵", TRIAL_DAYS = 14, EXPIRY_WARN_DAYS = 90, SUPPORT = "support@yourdomain.com";
 // Defaults for billing. The platform owner can change these in the Settings screen (stored in platform/settings).
 const DEFAULTS = {plans: {basic: {name: "Basic", price: 100, staff: 3, products: 1000}, pro: {name: "Pro", price: 250, staff: 15, products: 20000}},
   instructions: "Pay by mobile money or bank transfer to the account shown here, then tap “I've paid” and enter your payment reference. Access is extended once the payment is confirmed."};

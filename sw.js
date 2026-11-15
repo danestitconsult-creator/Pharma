@@ -1,4 +1,4 @@
-/* PharmaDesk service worker: caches the app shell and Firebase SDK files for offline use.
+/* Danest IT Consult Pharma service worker: caches the app shell and Firebase SDK files for offline use.
    Bump VERSION whenever you deploy changes so users get the update. */
 const VERSION = "v6";
 const CACHE = "pharmadesk-" + VERSION;

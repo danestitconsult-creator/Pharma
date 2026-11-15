@@ -1,4 +1,4 @@
-# PharmaDesk (multi-pharmacy platform)
+# Danest IT Consult Pharma (multi-pharmacy platform)
 
 One `index.html` serves three kinds of user: the **platform owner** (you), a **pharmacy admin** and **pharmacy staff**. Each pharmacy's data lives under `shops/{shopId}/...` and is isolated by `firestore.rules`.
 
