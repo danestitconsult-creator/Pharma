@@ -11,6 +11,7 @@ One `index.html` serves three kinds of user: the **platform owner** (you), a **p
 
 ## How it works
 - A new user signs up and creates a pharmacy: it starts a 14-day trial and they become its admin.
+- Admins also get a **shop code** (Shop & team). Staff sign up, choose "Join an existing pharmacy", enter the code and join as staff. The admin can turn the code off or replace it. Code joins are not counted against the staff limit by the rules (the limit is only shown in the app).
 - Admins invite staff by email (Shop & team). The invited person signs up with that email and joins automatically.
 - Billing is manual-first (works with mobile money / bank transfer): the pharmacy admin taps **Pay**, enters a reference; you see it under Overview > Payments to confirm, tap **Record payment**, and the subscription extends. Plans, prices, limits and payment instructions are edited in Settings.
 - Enforcement is in `firestore.rules`: when a pharmacy is suspended or its subscription ends, writes are blocked and data stays readable. Staff and product limits are enforced in the app only.

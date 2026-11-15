@@ -26,6 +26,7 @@ body{margin:0;font:15px/1.5 Manrope,system-ui,-apple-system,sans-serif;backgroun
 button,input,select{font:inherit;font-size:16px;-webkit-appearance:none;appearance:none;border-radius:8px;min-height:44px}
 .hide{display:none!important}
 #login,#gate{min-height:100vh;min-height:100dvh;display:grid;place-items:center;background:var(--pine);padding:calc(20px + var(--st)) 20px calc(20px + var(--sb))}
+#gate{align-content:center;gap:14px}
 #login form,#gate form{background:var(--card);padding:30px;border-radius:12px;width:100%;max-width:400px;display:grid;gap:12px}
 #login h1,#gate h1{margin:0;font-size:28px;font-weight:800;color:var(--pine)}
 #app{display:grid;grid-template-columns:220px 1fr;min-height:100vh;min-height:100dvh}
@@ -147,7 +148,7 @@ const list = s => s.docs.map(d => ({id: d.id, ...d.data()}));
 const byName = (a, b) => (a.name || "").localeCompare(b.name || "");
 let CUR = PC; const money = n => CUR + " " + (+n || 0).toFixed(2), pm = n => PC + " " + (+n || 0).toFixed(2);
 
-let user, role, profile, shop, meds = [], sales = [], custs = [], members = [], invites = [], pays = [], shops = [], settings = DEFAULTS;
+let user, role, profile, shop, meds = [], sales = [], custs = [], members = [], invites = [], pays = [], shops = [], codes = [], settings = DEFAULTS;
 let view = "", cart = [], q = "", unsubs = [];
 const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.remove("hide"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add("hide"), 3200); };
 
@@ -177,7 +178,7 @@ $("#loginForm").onsubmit = async e => { e.preventDefault(); try { await signInWi
 $("#signup").onclick = async () => { try { await createUserWithEmailAndPassword(auth, $("#email").value.trim(), $("#pass").value); } catch (err) { authErr(err, "Could not create account"); } };
 $("#forgot").onclick = async () => { const m = $("#email").value.trim(); if (!m) return authErr({message: "enter your email first"}, "Reset"); try { await sendPasswordResetEmail(auth, m); toast("Password reset email sent"); } catch (err) { authErr(err, "Reset failed"); } };
 
-function reset() { unsubs.forEach(f => f()); unsubs = []; role = profile = shop = null; meds = []; sales = []; custs = []; members = []; invites = []; pays = []; shops = []; cart = []; view = ""; CUR = PC; }
+function reset() { unsubs.forEach(f => f()); unsubs = []; role = profile = shop = null; meds = []; sales = []; custs = []; members = []; invites = []; codes = []; pays = []; shops = []; cart = []; view = ""; CUR = PC; }
 const show = which => { $("#login").classList.toggle("hide", which !== "login"); $("#gate").classList.toggle("hide", which !== "gate"); $("#app").classList.toggle("hide", which !== "app"); };
 const w = (ref, fn) => unsubs.push(onSnapshot(ref, s => { fn(s); render(); }, e => toast("Database error: " + e.code)));
 
@@ -206,7 +207,28 @@ function gate() {
   show("gate");
   $("#gate").innerHTML = `<form id="gateForm"><h1>Set up your pharmacy</h1><p style="margin:0;color:var(--mute)">Start a ${TRIAL_DAYS}-day free trial. No payment needed.</p>
   <input id="gName" placeholder="Pharmacy name" required autocomplete="organization"><input id="gPhone" type="tel" placeholder="Phone (optional)" autocomplete="tel">
-  <button class="btn">Start free trial</button><button class="btn ghost" type="button" id="gInv">I was invited to a pharmacy</button><button class="link" type="button" id="gOut">Sign out</button></form>`;
+  <button class="btn">Start free trial</button><button class="btn ghost" type="button" id="gInv">I was invited by email</button></form>
+  <form id="joinForm"><h3 style="margin:0">Join an existing pharmacy</h3><p style="margin:0;color:var(--mute)">Ask your pharmacy admin for the shop code.</p>
+  <input id="gCode" placeholder="Shop code (e.g. K7M2-X9PQ)" autocapitalize="characters" autocorrect="off" spellcheck="false" autocomplete="off" required>
+  <button class="btn">Join pharmacy</button><button class="link" type="button" id="gOut">Sign out</button></form>`;
+}
+async function joinCode(raw) {
+  const code = raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (code.length < 6) return toast("Enter the full shop code.");
+  let c; try { c = await getDoc(doc(db, "shopCodes", code)); } catch (err) { return toast("Could not check that code: " + (err.code || err.message)); }
+  if (!c.exists() || !c.data().enabled) return toast("That code isn't valid or has been turned off. Ask your admin for a new one.");
+  const d = c.data(), e = user.email.toLowerCase(), b = writeBatch(db);
+  b.set(doc(db, "users", user.uid), {email: e, shopId: d.shopId, role: "staff", code});
+  b.set(doc(db, "shops", d.shopId, "members", user.uid), {email: e, role: "staff", code});
+  try { await b.commit(); } catch (err) { return toast("Could not join: " + (err.code || err.message)); }
+  profile = {email: e, shopId: d.shopId, role: "staff"}; toast("You joined " + (d.shopName || "the pharmacy")); startShop();
+}
+const mkCode = () => { const A = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint8Array(8)); return [...r].map(x => A[x % A.length]).join(""); };
+const fmtCode = c => c.slice(0, 4) + "-" + c.slice(4);
+async function newCode() {
+  let c; for (let i = 0; i < 5; i++) { c = mkCode(); if (!(await getDoc(doc(db, "shopCodes", c))).exists()) break; }
+  const b = writeBatch(db); codes.forEach(o => b.delete(doc(db, "shopCodes", o.id)));
+  b.set(doc(db, "shopCodes", c), {shopId: shop.id, shopName: shop.name, enabled: true}); await b.commit(); toast("New shop code created");
 }
 async function createShop(name, phone) {
   const sid = doc(collection(db, "shops")).id, t = now(), e = user.email.toLowerCase(), b = writeBatch(db);
@@ -228,6 +250,7 @@ function startShop() {
   if (profile.role === "admin") {
     w(col("members"), s => members = list(s));
     w(query(collection(db, "invites"), where("shopId", "==", sid)), s => invites = list(s));
+    w(query(collection(db, "shopCodes"), where("shopId", "==", sid)), s => codes = list(s));
     w(query(collection(db, "payments"), where("shopId", "==", sid)), s => pays = list(s).sort((a, b) => b.ts - a.ts));
   }
 }
@@ -329,6 +352,10 @@ function team() {
   const me = user.uid;
   return `<div class="bar"><h2>Shop & team</h2><button class="btn ghost" data-act="editShop">Edit shop details</button></div>
   <div class="panel"><h3>${esc(shop.name)}</h3><p style="margin:0;color:var(--mute)">${esc(shop.phone || "No phone")} · ${esc(shop.address || "No address")} · Currency ${esc(shop.currency)}</p></div>
+  <div class="panel"><h3>Shop code</h3>${codes[0] ? `<p style="font-size:28px;font-weight:800;letter-spacing:2px;margin:4px 0">${fmtCode(codes[0].id)} ${codes[0].enabled ? "" : '<span class="tag bad">Off</span>'}</p>
+  <p><small>Staff create an account, choose “Join an existing pharmacy” and enter this code. They join as staff. Turn it off or make a new code at any time; people already in stay in.</small></p>
+  <button class="btn" data-act="copyCode">Copy code</button> <button class="btn ghost" data-act="toggleCode" ${canWrite() ? "" : "disabled"}>${codes[0].enabled ? "Turn off" : "Turn on"}</button> <button class="btn ghost" data-act="newCode" ${canWrite() ? "" : "disabled"}>New code</button>`
+  : `<p style="margin:0 0 10px;color:var(--mute)">No code yet. Create one so staff can join without an email invite.</p><button class="btn" data-act="newCode" ${canWrite() ? "" : "disabled"}>Create shop code</button>`}</div>
   <div class="bar"><h3 style="margin:0;flex:1">Team (${members.length + invites.length} of ${lim().staff})</h3><button class="btn" data-act="invite" ${canWrite() ? "" : "disabled"}>Invite staff</button></div>
   <div class="panel"><table><tr><th>Email</th><th>Role</th><th></th></tr>
   ${members.map(m => `<tr><td>${esc(m.email)}</td><td>${esc(m.role)}</td><td class="r">${m.id === me ? "<small>You</small>" : `<button class="btn del sm" data-act="rmMember" data-id="${m.id}">Remove</button>`}</td></tr>`).join("")}
@@ -445,6 +472,9 @@ document.addEventListener("click", async e => {
   if (act === "invite") { if (members.length + invites.length >= lim().staff) return toast("Staff limit reached for your plan. Upgrade to add more.");
     form("Invite staff", [["email", "Email", "email"], ["role", "Role", "select", 1, [["staff", "Staff"], ["admin", "Admin"]]]], {role: "staff"}, async o => { const em = o.email.trim().toLowerCase(); await setDoc(doc(db, "invites", em), {email: em, role: o.role, shopId: shop.id, shopName: shop.name, by: user.email}); toast("Invite saved. Ask them to sign up with " + em); }); }
   if (act === "rmMember" && confirm("Remove this person's access?")) rmMember(id).catch(err => toast(err.code));
+  if (act === "newCode") newCode().catch(err => toast("Could not create code: " + (err.code || err.message)));
+  if (act === "toggleCode") updateDoc(doc(db, "shopCodes", codes[0].id), {enabled: !codes[0].enabled, shopId: shop.id});
+  if (act === "copyCode") { const c = fmtCode(codes[0].id); try { await navigator.clipboard.writeText(c); toast("Copied " + c); } catch (err) { toast("Your code is " + c); } }
   if (act === "rmInvite") deleteDoc(doc(db, "invites", id));
   if (act === "pay") form("Pay for " + settings.plans[id].name, [["plan", "Plan", "select", 1, planOpts()], ["months", "Months", "select", 1, [[1, "1 month"], [3, "3 months"], [6, "6 months"], [12, "12 months"]]], ["ref", "Payment reference"]], {plan: id, months: 1},
     o => updateDoc(doc(db, "shops", shop.id), {payRequest: {plan: o.plan, months: +o.months, ref: o.ref, ts: now()}}));
@@ -460,6 +490,7 @@ document.addEventListener("click", async e => {
       o => setDoc(doc(db, "platform", "settings"), {plans: {basic: {name: "Basic", price: o.bp, staff: o.bs, products: o.bn}, pro: {name: "Pro", price: o.pp, staff: o.ps, products: o.pn}}, instructions: o.instructions})); }
 });
 document.addEventListener("submit", async e => {
+  if (e.target.id === "joinForm") { e.preventDefault(); return joinCode($("#gCode").value); }
   if (e.target.id !== "gateForm") return; e.preventDefault();
   try { await createShop($("#gName").value.trim(), $("#gPhone").value.trim()); } catch (err) { toast("Could not create pharmacy: " + (err.code || err.message)); }
 });
