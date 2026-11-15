@@ -96,6 +96,9 @@ label{display:grid;gap:4px;font-size:13px;color:var(--mute);font-weight:600}
 .lbl{display:grid;gap:4px;font-size:13px;color:var(--mute);font-weight:600}
 button{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 body:has(dialog[open]){overflow:hidden}
+.pw{position:relative}.pw input{padding-right:48px}
+.pw button{position:absolute;right:2px;top:0;bottom:0;width:44px;min-height:0;background:none;border:0;border-radius:8px;color:var(--mute);cursor:pointer;display:grid;place-items:center;padding:0}
+.pw svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .th{width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--line);flex:none;background:#fff}
 .nm{display:flex;gap:10px;align-items:center}
 #printArea{display:none}
@@ -127,7 +130,8 @@ body.printing #printArea{display:block}body.printing #printArea.sheet{display:gr
     <h1>Danest IT Consult Pharma</h1>
     <p style="margin:0;color:var(--mute)">Sign in to manage your pharmacy.</p>
     <input id="email" type="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Email" required autocomplete="username">
-    <input id="pass" type="password" placeholder="Password (6+ characters)" required minlength="6" autocomplete="current-password">
+    <div class="pw"><input id="pass" type="password" placeholder="Password" required autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <button type="button" id="eye" aria-label="Show password" aria-pressed="false"></button></div>
     <button class="btn" type="submit">Sign in</button>
     <button class="btn ghost" type="button" id="signup">Create account</button>
     <button class="link" type="button" id="forgot">Forgot password?</button>
@@ -208,7 +212,14 @@ const openDlg = d => typeof d.showModal === "function" ? d.showModal() : d.setAt
 const closeDlg = d => typeof d.close === "function" ? d.close() : d.removeAttribute("open");
 
 /* ---------- Auth & onboarding ---------- */
-const authErr = (err, p) => $("#loginErr").textContent = p + ": " + (err.code || err.message).replace("auth/", "").replace(/-/g, " ");
+const AUTH_MSG = {"auth/weak-password": "Firebase needs a password of at least 6 characters.", "auth/invalid-credential": "Wrong email or password.", "auth/wrong-password": "Wrong email or password.", "auth/user-not-found": "No account with that email. Tap Create account.",
+  "auth/email-already-in-use": "That email already has an account. Tap Sign in.", "auth/invalid-email": "That email address doesn't look right.", "auth/too-many-requests": "Too many attempts. Wait a few minutes and try again.", "auth/network-request-failed": "No connection. Check your internet and try again."};
+const authErr = (err, p) => $("#loginErr").textContent = AUTH_MSG[err.code] || (p + ": " + (err.code || err.message).replace("auth/", "").replace(/-/g, " "));
+const EYE = '<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24"><path d="M17.9 17.9A10.9 10.9 0 0 1 12 19C5 19 1 12 1 12a18.5 18.5 0 0 1 5.1-5.9M9.9 4.2A9.1 9.1 0 0 1 12 5c7 0 11 7 11 7a18.5 18.5 0 0 1-2.2 3.2M1 1l22 22"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/></svg>';
+$("#eye").innerHTML = EYE;
+$("#eye").onpointerdown = e => e.preventDefault();   // keep the keyboard open on iPhone
+$("#eye").onclick = () => { const p = $("#pass"), on = p.type === "password"; p.type = on ? "text" : "password"; $("#eye").innerHTML = on ? EYE_OFF : EYE; $("#eye").setAttribute("aria-label", on ? "Hide password" : "Show password"); $("#eye").setAttribute("aria-pressed", on); };
 $("#loginForm").onsubmit = async e => { e.preventDefault(); try { await signInWithEmailAndPassword(auth, $("#email").value.trim(), $("#pass").value); } catch (err) { authErr(err, "Could not sign in"); } };
 $("#signup").onclick = async () => { try { await createUserWithEmailAndPassword(auth, $("#email").value.trim(), $("#pass").value); } catch (err) { authErr(err, "Could not create account"); } };
 $("#forgot").onclick = async () => { const m = $("#email").value.trim(); if (!m) return authErr({message: "enter your email first"}, "Reset"); try { await sendPasswordResetEmail(auth, m); toast("Password reset email sent"); } catch (err) { authErr(err, "Reset failed"); } };
