@@ -129,7 +129,7 @@ h2{font-size:26px;letter-spacing:-.02em}h3{font-size:16px;font-weight:800;letter
 main{max-width:1180px}
 nav{background:linear-gradient(185deg,#0e4647 0%,#082a2b 100%);padding-top:calc(22px + var(--st));gap:2px;box-shadow:inset -1px 0 0 rgba(255,255,255,.06)}
 .brand{display:flex;gap:10px;align-items:center;padding:0 8px 22px}
-.brand img{width:40px;height:40px;border-radius:11px;box-shadow:0 4px 14px rgba(0,0,0,.3);flex:none}
+.logo{width:40px;height:40px;border-radius:11px;box-shadow:0 4px 14px rgba(0,0,0,.35);flex:none;display:block;background:#0f3d3e}
 nav b{padding:0;font-size:15px;line-height:1.2;letter-spacing:-.01em}
 nav button{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:#b5d3cd;font-weight:600;transition:background .15s,color .15s}
 nav button svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
@@ -185,7 +185,7 @@ dialog h3{font-size:19px;margin-bottom:14px}
 .hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(155deg,#0f5254 0%,#0a3536 55%,#082a2b 100%);padding:calc(44px + var(--st)) 56px 48px;display:flex;flex-direction:column;justify-content:space-between;min-height:100vh;min-height:100dvh}
 .hero .art{position:absolute;right:-70px;bottom:-50px;width:540px;pointer-events:none}
 .hero .hb{display:flex;align-items:center;gap:12px;font-weight:700;position:relative}
-.hero .hb img{width:44px;height:44px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.hero .hb .logo{width:46px;height:46px;border-radius:13px;box-shadow:0 0 0 1px rgba(255,255,255,.18),0 6px 18px rgba(0,0,0,.35)}
 .hero .ht{position:relative;max-width:520px}
 #login .hero h1{color:#fff;font-size:42px;line-height:1.1;letter-spacing:-.03em;margin:0 0 14px}
 .hero p{margin:0 0 22px;font-size:17px;color:#bfe0d8;max-width:420px}
@@ -215,7 +215,7 @@ dialog h3{font-size:19px;margin-bottom:14px}
 
 <section id="login">
   <div class="hero">
-    <div class="hb"><img src="icons/icon-192.png" alt=""><span>Danest IT Consult</span></div>
+    <div class="hb"><svg class="logo" viewBox="0 0 64 64" role="img" aria-label="Danest IT Consult Pharma"><rect width="64" height="64" rx="14" fill="#0f3d3e"/><g transform="rotate(45 32 32)"><rect x="12" y="23" width="40" height="18" rx="9" fill="#fff"/><path d="M32 23h11a9 9 0 0 1 0 18H32z" fill="#e8a317"/></g></svg><span>Danest IT Consult</span></div>
     <svg class="art" viewBox="0 0 520 520" aria-hidden="true"><g transform="rotate(-35 300 200)"><rect x="150" y="150" width="300" height="100" rx="50" fill="#fff" fill-opacity=".10"/><path d="M300 150h100a50 50 0 0 1 0 100H300z" fill="#f2a93b" fill-opacity=".9"/></g><g transform="rotate(25 300 400)"><rect x="200" y="360" width="200" height="70" rx="35" fill="#3cc6a2" fill-opacity=".38"/><path d="M300 360h65a35 35 0 0 1 0 70h-65z" fill="#fff" fill-opacity=".26"/></g><circle cx="120" cy="330" r="46" fill="#fff" fill-opacity=".07" stroke="#fff" stroke-opacity=".22" stroke-width="2"/><path d="M70 120v50M45 145h50" stroke="#3cc6a2" stroke-width="10" stroke-linecap="round" opacity=".6"/></svg>
     <div class="ht"><h1>Danest IT Consult Pharma</h1><p>Stock, sales and expiry tracking for every pharmacy you run.</p>
       <div class="pills"><span>Expiry alerts</span><span>Barcode scanning</span><span>Works offline</span></div></div>
@@ -421,6 +421,7 @@ function banner() {
 }
 
 /* ---------- Navigation & render ---------- */
+const LOGO = `<svg class="logo" viewBox="0 0 64 64" role="img" aria-label="Danest IT Consult Pharma"><rect width="64" height="64" rx="14" fill="#0f3d3e"/><g transform="rotate(45 32 32)"><rect x="12" y="23" width="40" height="18" rx="9" fill="#fff"/><path d="M32 23h11a9 9 0 0 1 0 18H32z" fill="#e8a317"/></g></svg>`;
 const ic = p => `<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
 const ICON = {
   dash: ic('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'),
@@ -449,7 +450,7 @@ function render() {
   if (!role || (role === "shop" && !shop)) return;
   const items = role === "owner" ? NAV.owner : NAV[profile.role] || NAV.staff;
   if (!items.some(i => i[0] === view)) view = items.some(i => i[0] === location.hash.slice(1)) ? location.hash.slice(1) : items[0][0];
-  $("#nav").innerHTML = `<div class="brand"><img src="icons/icon-192.png" alt=""><b>${BRAND}${role === "owner" ? " Admin" : ""}</b></div>` + items.map(([k, l]) => `<button data-v="${k}" class="${k === view ? "on" : ""}">${ICON[k]}<span>${l}</span></button>`).join("") + `<span class="sp"></span><small>${esc(role === "shop" ? shop.name + " · " : "")}${esc(user.email)}</small><button id="out">${ICON.out}<span>Sign out</span></button>`;
+  $("#nav").innerHTML = `<div class="brand">${LOGO}<b>${BRAND}${role === "owner" ? " Admin" : ""}</b></div>` + items.map(([k, l]) => `<button data-v="${k}" class="${k === view ? "on" : ""}">${ICON[k]}<span>${l}</span></button>`).join("") + `<span class="sp"></span><small>${esc(role === "shop" ? shop.name + " · " : "")}${esc(user.email)}</small><button id="out">${ICON.out}<span>Sign out</span></button>`;
   $("#view").innerHTML = banner() + V[view]();
 }
 
