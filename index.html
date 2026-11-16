@@ -121,17 +121,111 @@ body:has(dialog[open]){overflow:hidden}
 @media print{nav,.bar,.btn,#ios{display:none!important}#app{display:block}
 body.printing>*:not(#printArea){display:none!important}body.printing{background:#fff;padding:0}
 body.printing #printArea{display:block}body.printing #printArea.sheet{display:grid}}
+
+/* ===== Visual refresh ===== */
+:root{--pine:#0b3b3c;--pine2:#14585a;--paper:#eef3f1;--line:#e0e8e5;--mint:#3cc6a2;--mintbg:#dff5ee;--amber2:#f2a93b;--r:16px;--shadow:0 1px 2px rgba(11,59,60,.05),0 12px 30px -16px rgba(11,59,60,.22)}
+body{background:radial-gradient(1100px 520px at 88% -12%,#d6ece4 0,transparent 62%),var(--paper);font-feature-settings:"tnum" 1}
+h2{font-size:26px;letter-spacing:-.02em}h3{font-size:16px;font-weight:800;letter-spacing:-.01em}
+main{max-width:1180px}
+nav{background:linear-gradient(185deg,#0e4647 0%,#082a2b 100%);padding-top:calc(22px + var(--st));gap:2px;box-shadow:inset -1px 0 0 rgba(255,255,255,.06)}
+.brand{display:flex;gap:10px;align-items:center;padding:0 8px 22px}
+.brand img{width:40px;height:40px;border-radius:11px;box-shadow:0 4px 14px rgba(0,0,0,.3);flex:none}
+nav b{padding:0;font-size:15px;line-height:1.2;letter-spacing:-.01em}
+nav button{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:#b5d3cd;font-weight:600;transition:background .15s,color .15s}
+nav button svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+@media(hover:hover){nav button:hover{background:rgba(255,255,255,.08);color:#fff}}
+nav button.on{background:rgba(255,255,255,.14);color:#fff;box-shadow:inset 3px 0 0 var(--amber2)}
+nav small{color:#8fb5ae;padding:10px 12px 4px}#out{margin-top:2px}
+.panel,.stat,.plan{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.panel{padding:20px}
+.stat{padding:18px;position:relative;overflow:hidden}
+.stat strong{font-size:26px;letter-spacing:-.02em;margin-top:2px;color:var(--ink);white-space:nowrap}
+.stat.warn strong,.stat.bad strong{color:var(--ink)}
+.stat small{color:var(--mute);font-size:12.5px}
+.stat.warn::before,.stat.bad::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--amber2)}
+.stat.bad::before{background:#d14a32}
+.chip{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;margin-bottom:12px;font-style:normal}
+.chip svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.c-mint{background:#dff5ee;color:#12785a}.c-blue{background:#e3edfb;color:#2a5db0}.c-amber{background:#fdf0d4;color:#a06608}.c-orange{background:#ffe8da;color:#c0561a}.c-red{background:#fbe3de;color:#b4361f}
+.hello{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.hello small{color:var(--mute);font-weight:600}.hello h2{margin:2px 0 0;font-size:30px}
+.chart{display:flex;align-items:flex-end;gap:10px;height:176px;padding-top:6px}
+.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;min-width:0}
+.chart i{display:block;width:100%;max-width:48px;border-radius:10px 10px 4px 4px;background:linear-gradient(180deg,#2fae8f,#17676a)}
+.chart .col.today i{background:linear-gradient(180deg,#f8c066,#e8961a)}
+.chart .v{font-size:11px;color:var(--mute);font-weight:700;height:14px}.chart b{font-size:12px;color:var(--mute);font-weight:600}
+.btn{background:linear-gradient(180deg,#17676a,#0f4a4b);box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 8px 16px -8px rgba(11,59,60,.6);border-radius:12px;padding:10px 18px;transition:filter .15s,transform .06s}
+@media(hover:hover){.btn:hover{background:linear-gradient(180deg,#17676a,#0f4a4b);filter:brightness(1.1)}}
+.btn:active{transform:scale(.98)}
+.btn.ghost,.btn.del{background:#fff;box-shadow:none;border:1px solid #d3dfdb}
+.btn.ghost{color:var(--pine)}.btn.sm{border-radius:10px}
+input,select,textarea{border:1px solid #d3dfdb;border-radius:12px;background-color:#fff;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pine2);box-shadow:0 0 0 4px rgba(27,122,116,.16)}
+th{font-size:12.5px;font-weight:700;background:#f5faf8;border-bottom:1px solid var(--line);padding:10px 12px}
+th:first-child{border-radius:10px 0 0 10px}th:last-child{border-radius:0 10px 10px 0}
+td{padding:12px;border-bottom:1px solid #eef3f1}tr:last-child td{border-bottom:0}
+@media(hover:hover){tr:hover>td{background:#f8fbfa}}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px}
+.tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.pick{border-radius:12px;border-bottom:0;padding:10px 12px;margin-bottom:4px}
+@media(hover:hover){.pick:hover{background:var(--mintbg)}}
+.tot{background:var(--mintbg);color:var(--pine);padding:14px 16px;border-radius:14px}
+.plan.cur{border:2px solid var(--pine2);box-shadow:0 0 0 5px rgba(27,122,116,.1),var(--shadow)}
+.bn{border-radius:14px}
+.empty{display:grid;justify-items:center;gap:8px;text-align:center;padding:26px 10px;color:var(--mute)}
+.empty svg{width:46px;height:46px;opacity:.55}
+dialog{border-radius:22px;padding:26px;box-shadow:0 30px 80px -20px rgba(8,42,43,.55)}
+dialog::backdrop{background:rgba(8,42,43,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+dialog h3{font-size:19px;margin-bottom:14px}
+#toast{background:rgba(11,59,60,.97);border-radius:14px;box-shadow:0 14px 30px -10px rgba(0,0,0,.45);font-weight:600}
+#ios{border-radius:16px;background:rgba(11,59,60,.97);box-shadow:0 14px 30px -10px rgba(0,0,0,.45)}
+#gate{background:linear-gradient(160deg,#0f5254,#082a2b)}
+#gate form{border-radius:22px;box-shadow:0 30px 70px -24px rgba(0,0,0,.5)}
+#login{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);padding:0;place-items:stretch;background:#f4f8f6}
+.hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(155deg,#0f5254 0%,#0a3536 55%,#082a2b 100%);padding:calc(44px + var(--st)) 56px 48px;display:flex;flex-direction:column;justify-content:space-between;min-height:100vh;min-height:100dvh}
+.hero .art{position:absolute;right:-70px;bottom:-50px;width:540px;pointer-events:none}
+.hero .hb{display:flex;align-items:center;gap:12px;font-weight:700;position:relative}
+.hero .hb img{width:44px;height:44px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.hero .ht{position:relative;max-width:520px}
+#login .hero h1{color:#fff;font-size:42px;line-height:1.1;letter-spacing:-.03em;margin:0 0 14px}
+.hero p{margin:0 0 22px;font-size:17px;color:#bfe0d8;max-width:420px}
+.hero .pills{display:flex;gap:8px;flex-wrap:wrap}
+.hero .pills span{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600}
+#login form{align-self:center;justify-self:center;background:transparent;box-shadow:none;padding:32px;max-width:400px}
+#login form h2{margin:0;font-size:28px}
+@media(min-width:801px){.hero .art{top:60px;bottom:auto;right:-40px;width:430px}}
+@media(max-width:800px){
+  #login{grid-template-columns:1fr}
+  .hero{min-height:0;padding:calc(26px + var(--st)) 24px 30px;gap:18px}
+  .hero .art{width:280px;right:-120px;bottom:-90px}.hero .pills{display:none}
+  #login .hero h1{font-size:25px;margin:0 0 6px}.hero p{font-size:15px;margin:0}
+  #login form{padding:26px 22px 44px;max-width:none;width:100%}
+  nav{background:rgba(8,42,43,.96);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:22px 22px 0 0;gap:0;padding:8px 8px calc(8px + var(--sb));box-shadow:0 -8px 30px -10px rgba(0,0,0,.35)}
+  .brand{display:none}
+  nav button{flex-direction:column;gap:3px;padding:6px 10px;min-width:68px;font-size:11px;border-radius:12px;justify-content:center;text-align:center}
+  nav button.on{box-shadow:none}nav button.on svg{color:var(--amber2)}
+  h2{font-size:23px}.hello h2{font-size:25px}.panel{padding:16px;border-radius:14px}
+  #app{grid-template-columns:minmax(0,1fr)}main{min-width:0}
+  .bar input,.bar select{min-width:0;flex:1 1 100%}.bar .btn{flex:1 1 auto}
+  .stat{padding:14px}.stat strong{font-size:22px}
+}
 </style>
 </head>
 <body>
 
 <section id="login">
+  <div class="hero">
+    <div class="hb"><img src="icons/icon-192.png" alt=""><span>Danest IT Consult</span></div>
+    <svg class="art" viewBox="0 0 520 520" aria-hidden="true"><g transform="rotate(-35 300 200)"><rect x="150" y="150" width="300" height="100" rx="50" fill="#fff" fill-opacity=".10"/><path d="M300 150h100a50 50 0 0 1 0 100H300z" fill="#f2a93b" fill-opacity=".9"/></g><g transform="rotate(25 300 400)"><rect x="200" y="360" width="200" height="70" rx="35" fill="#3cc6a2" fill-opacity=".38"/><path d="M300 360h65a35 35 0 0 1 0 70h-65z" fill="#fff" fill-opacity=".26"/></g><circle cx="120" cy="330" r="46" fill="#fff" fill-opacity=".07" stroke="#fff" stroke-opacity=".22" stroke-width="2"/><path d="M70 120v50M45 145h50" stroke="#3cc6a2" stroke-width="10" stroke-linecap="round" opacity=".6"/></svg>
+    <div class="ht"><h1>Danest IT Consult Pharma</h1><p>Stock, sales and expiry tracking for every pharmacy you run.</p>
+      <div class="pills"><span>Expiry alerts</span><span>Barcode scanning</span><span>Works offline</span></div></div>
+  </div>
   <form id="loginForm">
-    <h1>Danest IT Consult Pharma</h1>
+    <h2>Welcome back</h2>
     <p style="margin:0;color:var(--mute)">Sign in to manage your pharmacy.</p>
     <input id="email" type="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Email" required autocomplete="username">
     <div class="pw"><input id="pass" type="password" placeholder="Password" required autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
-      <button type="button" id="eye" aria-label="Show password" aria-pressed="false"></button></div>
+      <button type="button" id="eye" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
     <button class="btn" type="submit">Sign in</button>
     <button class="btn ghost" type="button" id="signup">Create account</button>
     <button class="link" type="button" id="forgot">Forgot password?</button>
@@ -327,6 +421,25 @@ function banner() {
 }
 
 /* ---------- Navigation & render ---------- */
+const ic = p => `<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+const ICON = {
+  dash: ic('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'),
+  pos: ic('<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 11.5a2 2 0 0 0 2 1.5h7.6a2 2 0 0 0 2-1.5L21 7H6"/>'),
+  inv: ic('<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>'),
+  hist: ic('<path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>'),
+  cust: ic('<circle cx="9" cy="8" r="3.5"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 21a6 6 0 0 0-3-5.2"/>'),
+  team: ic('<path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12v8h14v-8"/>'),
+  billing: ic('<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/>'),
+  ovr: ic('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'),
+  shops: ic('<path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12v8h14v-8"/>'),
+  pays: ic('<path d="M3 7h17a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 7l12-4v4M17 14h2"/>'),
+  cfg: ic('<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>'),
+  out: ic('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>'),
+  alert: ic('<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>'),
+  clock: ic('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  x: ic('<circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/>')
+};
+const statCard = (icon, tone, label, val, sub, cls = "") => `<div class="stat ${cls}"><i class="chip c-${tone}">${ICON[icon]}</i><span>${label}</span><strong>${val}</strong>${sub ? `<small>${sub}</small>` : ""}</div>`;
 const NAV = {
   owner: [["ovr", "Overview"], ["shops", "Pharmacies"], ["pays", "Payments"], ["cfg", "Settings"]],
   admin: [["dash", "Home"], ["pos", "New sale"], ["inv", "Inventory"], ["hist", "Sales"], ["cust", "Customers"], ["team", "Shop & team"], ["billing", "Billing"]],
@@ -336,7 +449,7 @@ function render() {
   if (!role || (role === "shop" && !shop)) return;
   const items = role === "owner" ? NAV.owner : NAV[profile.role] || NAV.staff;
   if (!items.some(i => i[0] === view)) view = items.some(i => i[0] === location.hash.slice(1)) ? location.hash.slice(1) : items[0][0];
-  $("#nav").innerHTML = `<b>${BRAND}${role === "owner" ? " Admin" : ""}</b>` + items.map(([k, l]) => `<button data-v="${k}" class="${k === view ? "on" : ""}">${l}</button>`).join("") + `<span class="sp"></span><small>${esc(role === "shop" ? shop.name + " · " : "")}${esc(user.email)}</small><button id="out">Sign out</button>`;
+  $("#nav").innerHTML = `<div class="brand"><img src="icons/icon-192.png" alt=""><b>${BRAND}${role === "owner" ? " Admin" : ""}</b></div>` + items.map(([k, l]) => `<button data-v="${k}" class="${k === view ? "on" : ""}">${ICON[k]}<span>${l}</span></button>`).join("") + `<span class="sp"></span><small>${esc(role === "shop" ? shop.name + " · " : "")}${esc(user.email)}</small><button id="out">${ICON.out}<span>Sign out</span></button>`;
   $("#view").innerHTML = banner() + V[view]();
 }
 
@@ -349,20 +462,22 @@ const status = m => {
 };
 const tag = m => { const [c, t] = status(m); return `<span class="tag ${c}">${t}</span>`; };
 const cartTotal = () => cart.reduce((s, c) => s + c.price * c.qty, 0);
-const empty = t => `<div class="empty">${t}</div>`;
+const empty = t => `<div class="empty"><svg viewBox="0 0 48 48" aria-hidden="true"><g transform="rotate(-40 24 24)"><rect x="6" y="15" width="36" height="18" rx="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 15h9a9 9 0 0 1 0 18h-9z" fill="currentColor" opacity=".35"/><path d="M24 15v18" stroke="currentColor" stroke-width="2"/></g></svg><span>${t}</span></div>`;
 
 function dash() {
   const t = ld(), todays = sales.filter(s => s.day === t);
   const low = meds.filter(m => m.qty <= m.reorder && !(m.expiry && daysTo(m.expiry) < 0));
   const soon = meds.filter(m => m.expiry && daysTo(m.expiry) >= 0 && daysTo(m.expiry) <= EXPIRY_WARN_DAYS);
   const gone = meds.filter(m => m.expiry && daysTo(m.expiry) < 0);
+  const hr = new Date().getHours(), hi = hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
+  const days = [...Array(7)].map((_, i) => { const d = ld(new Date(now() - (6 - i) * DAY)); return {d, v: sales.filter(s => s.day === d).reduce((a, x) => a + x.total, 0)}; });
+  const mx = Math.max(1, ...days.map(x => x.v)), wk = d => new Date(d + "T00:00:00").toLocaleDateString(undefined, {weekday: "short"}), ab = n => n >= 1000 ? (n / 1000).toFixed(1) + "k" : Math.round(n);
   const rows = a => a.length ? `<table>${a.slice(0, 8).map(m => `<tr><td>${esc(m.name)}<br><small>${esc(m.batch)}</small></td><td class="r">${m.qty} left</td><td class="r">${esc(m.expiry)}</td></tr>`).join("")}</table>` : empty("Nothing to show.");
-  return `<h2>${esc(shop.name)}</h2><div class="stats">
-    <div class="stat"><span>Sales today</span><strong>${money(todays.reduce((s, x) => s + x.total, 0))}</strong><small>${todays.length} transactions</small></div>
-    <div class="stat"><span>Stock value (at cost)</span><strong>${money(meds.reduce((s, m) => s + m.qty * m.cost, 0))}</strong><small>${meds.length} products</small></div>
-    <div class="stat warn"><span>Low or out of stock</span><strong>${low.length}</strong></div>
-    <div class="stat warn"><span>Expiring in ${EXPIRY_WARN_DAYS} days</span><strong>${soon.length}</strong></div>
-    <div class="stat bad"><span>Expired batches</span><strong>${gone.length}</strong></div></div>
+  return `<div class="hello"><div><small>${esc(shop.name)} · ${new Date().toLocaleDateString(undefined, {weekday: "long", day: "numeric", month: "long"})}</small><h2>${hi}</h2></div>${subTag(shop)}</div>
+    <div class="stats">${statCard("hist", "mint", "Sales today", money(todays.reduce((s, x) => s + x.total, 0)), todays.length + (todays.length === 1 ? " transaction" : " transactions"))}
+    ${statCard("inv", "blue", "Stock value (at cost)", money(meds.reduce((s, m) => s + m.qty * m.cost, 0)), meds.length + " products")}
+    ${statCard("alert", "amber", "Low or out of stock", low.length, "", "warn")}${statCard("clock", "orange", "Expiring in " + EXPIRY_WARN_DAYS + " days", soon.length, "", "warn")}${statCard("x", "red", "Expired batches", gone.length, "", "bad")}</div>
+    <div class="panel"><h3>Sales, last 7 days</h3><div class="chart">${days.map((x, i) => `<div class="col ${i === 6 ? "today" : ""}"><span class="v">${x.v ? ab(x.v) : ""}</span><i style="height:${Math.round(x.v / mx * 110) + 4}px"></i><b>${wk(x.d)}</b></div>`).join("")}</div></div>
     <div class="cols"><div class="panel"><h3>Reorder soon</h3>${rows(low)}</div>
     <div class="panel"><h3>Expiring soon</h3>${rows(soon)}<h3 style="margin-top:14px">Expired: remove from shelves</h3>${rows(gone)}</div></div>`;
 }
@@ -428,9 +543,8 @@ function ovr() {
   const reqs = shops.filter(s => s.payRequest), soon = live.filter(s => s.paidUntil - t < 7 * DAY);
   const mini = a => a.length ? `<table>${a.map(s => `<tr><td>${esc(s.name)}</td><td>${subTag(s)}</td><td class="r"><button class="btn ghost sm" data-act="recPay" data-id="${s.id}">Record payment</button></td></tr>`).join("")}</table>` : empty("None.");
   return `<h2>Platform overview</h2><div class="stats">
-  <div class="stat"><span>Pharmacies</span><strong>${shops.length}</strong></div><div class="stat"><span>Paying</span><strong>${paid.length}</strong></div>
-  <div class="stat"><span>On trial</span><strong>${live.length - paid.length}</strong></div><div class="stat bad"><span>Expired or suspended</span><strong>${shops.length - live.length}</strong></div>
-  <div class="stat"><span>Monthly recurring revenue</span><strong>${pm(mrr)}</strong></div><div class="stat"><span>Collected this month</span><strong>${pm(rev)}</strong></div></div>
+  ${statCard("shops", "blue", "Pharmacies", shops.length)}${statCard("billing", "mint", "Paying", paid.length)}${statCard("clock", "amber", "On trial", live.length - paid.length)}${statCard("x", "red", "Expired or suspended", shops.length - live.length, "", "bad")}
+  ${statCard("ovr", "mint", "Monthly recurring revenue", pm(mrr))}${statCard("pays", "orange", "Collected this month", pm(rev))}</div>
   <div class="cols"><div class="panel"><h3>Payments to confirm (${reqs.length})</h3>${mini(reqs)}</div><div class="panel"><h3>Ending within 7 days</h3>${mini(soon)}</div></div>`;
 }
 function shopsV() {
@@ -579,7 +693,7 @@ async function rmMember(id) {
 
 document.addEventListener("click", async e => {
   const t = e.target;
-  if (t.id === "out" || t.id === "gOut") return signOut(auth);
+  if (t.closest("#out") || t.id === "gOut") return signOut(auth);
   if (t.id === "gInv") { try { await findInvite(); if (role !== "shop") toast("No invitation found for " + user.email); } catch (err) { toast("Could not check invitations: " + (err.code || err.message)); } return; }
   if (t.id === "reload") return location.reload();
   if (t.id === "hintX") { store.set("hint", "1"); return $("#ios").classList.add("hide"); }
